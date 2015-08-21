@@ -14,7 +14,7 @@ This software is released under the terms of the MIT license. See LICENCE.md for
 
 The following API methods are implemented (wrapped)
 
-- new() / New()
+- new() / New() (Tested)
 - destroy() / Destroy()
 - put() / Put()
 - get() / Get()
@@ -22,7 +22,7 @@ The following API methods are implemented (wrapped)
 - bulkDocs() / BulkDocs()
 - allDocs() / AllDocs()
 - viewCleanup()
-- info() / Info()
+- info() / Info() (Tested)
 - compact() / Compact()
 - revsDiff() / RevsDiff()
 - defaults() / Defaults()

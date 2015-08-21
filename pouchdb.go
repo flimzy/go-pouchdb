@@ -1,26 +1,59 @@
 // +build js
 
-// Package pouchdb provides GopherJS bindings for PouchDB
+// Package pouchdb provides GopherJS bindings for PouchDB.
+// Whenever possible, the PouchDB function calls have been made more
+// Go idiomatic. This means:
+//  - They don't take optional arguments. Where appropriate, multiple
+//    versions of a function exist with different argument lists.
+//  - They don't use call backs or return Promises
+//  - They have been made synchronous. If you need asynchronous operation,
+//    wrap your calls in goroutines
+//  - They return errors as the last return value (Go style) rather than the
+//    first (JS style)
 package pouchdb
 
 import (
     "github.com/gopherjs/gopherjs/js"
+//     "honnef.co/go/js/console"
 )
 
 type PouchDB struct {
     o   *js.Object
 }
 
+type pouchResult struct {
+    result  *js.Object
+    err     *js.Object
+}
+
+func (pr *pouchResult) Result() (*js.Object,error) {
+    if pr.err == nil {
+        return pr.result,nil
+    }
+    return pr.result,&js.Error{pr.err}
+}
+
 // New creates a database or opens an existing one.
 // See: http://pouchdb.com/api.html#create_database
-func New(args ...interface{}) *PouchDB {
-    return &PouchDB{ js.Global.Get("PouchDB").New(args...) }
+func New(db_name string) *PouchDB {
+    return &PouchDB{ js.Global.Get("PouchDB").New(db_name) }
+}
+
+// NewFromOpts creates a database or opens an existing one.
+// See: http://pouchdb.com/api.html#create_database
+func NewFromOpts(opts *js.Object) *PouchDB {
+    return &PouchDB{ js.Global.Get("PouchDB").New(opts) }
 }
 
 // Info fetches information about a database.
 // See: http://pouchdb.com/api.html#database_information
-func (db *PouchDB) Info(callback interface{}) {
-    db.o.Call("info",callback)
+func (db *PouchDB) Info() (*js.Object,error) {
+    infoChan := make(chan *pouchResult)
+    db.o.Call("info",func(err *js.Object, info *js.Object) {
+        infoChan <- &pouchResult{info, err}
+    })
+    result := <-infoChan
+    return result.Result()
 }
 
 // Deestroy will delete the database.
