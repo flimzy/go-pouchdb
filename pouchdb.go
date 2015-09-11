@@ -122,13 +122,13 @@ func (db *PouchDB) Defaults(opts *js.Object) {
 	db.o.Call("defaults", opts)
 }
 
-// DebugEnable enables debugging for the specified module.
+// Debug enables debugging for the specified module.
 // See: http://pouchdb.com/api.html#debug_mode
-func (db *PouchDB) DebugEnable(module string) {
-	db.o.Get("debug").Call("enable", module)
+func Debug(module string) {
+	js.Global.Get("PouchDB").Get("debug").Call("enable", module)
 }
 
 // DebugDisable disables debugging.
-func (db *PouchDB) DebugDisable() {
-	db.o.Get("debug").Call("disable")
+func DebugDisable() {
+	js.Global.Get("PouchDB").Get("debug").Call("disable")
 }

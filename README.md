@@ -10,34 +10,29 @@ This is a work in progress. Use at your own risk. Please contribute pull request
 
 This software is released under the terms of the MIT license. See LICENCE.md for details.
 
-## Done
+## Status
 
-The following API methods are implemented (wrapped)
+The following table shows the status of each API method.
 
-- new() / New() (Tested)
-- destroy() / Destroy()
-- put() / Put()
-- get() / Get()
-- remove() / Remove()
-- bulkDocs() / BulkDocs()
-- allDocs() / AllDocs()
-- viewCleanup()
-- info() / Info() (Tested)
-- compact() / Compact()
-- revsDiff() / RevsDiff()
-- defaults() / Defaults()
-- debug.enable() / DebugEnable()
-- debug.disable() / DebugDisable()
-
-## TODO
-
-The following API methods still need to be done. Please submit a PR!
-
-- changes()
-- replicate()
-- sync()
-- getAttachment()
-- removeAttachment()
-- query()
-- on()
-- plugin()
+| PouchDB name     | go-pouchdb Name | Tested  |
+|------------------|-----------------|---------|
+| new()            | New()           | Yes     |
+| destroy()        | Destroy()       | --      |
+| put()            | Put()           | --      |
+| get()            | Get()           | --      |
+| bulkDocs()       | BulkDocs()      | --      |
+| allDocs()        | AllDocs()       | --      |
+| viewCleanup()    | ViewCleanup()   | --      |
+| info()           | Info()          | Yes     |
+| compact()        | Compact()       | --      |
+| revsDiff()       | RevsDiff()      | --      |
+| defaults()       | Defaults()      | --      |
+| debug.enable()   | Debug()         | Yes     |
+| debug.disable()  | DebugDisable()  | --      |
+| changes()        | --              | --      |
+| replicate()      | --              | --      |
+| sync()           | --              | --      |
+| getAttachment()  | --              | --      |
+| query()          | --              | --      |
+| on()             | --              | --      |
+| plugin()         | --              | --      |
