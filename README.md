@@ -14,25 +14,26 @@ This software is released under the terms of the MIT license. See LICENCE.md for
 
 The following table shows the status of each API method.
 
-| PouchDB name     | go-pouchdb Name | Tested  |
-|------------------|-----------------|---------|
-| new()            | New()           | Yes     |
-| destroy()        | Destroy()       | --      |
-| put()            | Put()           | --      |
-| get()            | Get()           | --      |
-| bulkDocs()       | BulkDocs()      | --      |
-| allDocs()        | AllDocs()       | --      |
-| viewCleanup()    | ViewCleanup()   | --      |
-| info()           | Info()          | Yes     |
-| compact()        | Compact()       | --      |
-| revsDiff()       | RevsDiff()      | --      |
-| defaults()       | Defaults()      | --      |
-| debug.enable()   | Debug()         | Yes     |
-| debug.disable()  | DebugDisable()  | --      |
-| changes()        | --              | --      |
-| replicate()      | --              | --      |
-| sync()           | --              | --      |
-| getAttachment()  | --              | --      |
-| query()          | --              | --      |
-| on()             | --              | --      |
-| plugin()         | --              | --      |
+| PouchDB name     | go-pouchdb signature(s)                      | Tested  | Comments
+|------------------|----------------------------------------------|---------|-----------
+| new()            | New(db_name string) *PouchDB                 | Yes     |
+|                  | NewFromOpts(Options) *PouchDB                | Yes     |
+| destroy()        | (db *PouchDB) Destroy() error                | Yes     | No support for 'options' argument. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323).
+| put()            | --                                           | --      |
+| get()            | --                                           | --      |
+| bulkDocs()       | --                                           | --      |
+| allDocs()        | --                                           | --      |
+| viewCleanup()    | --                                           | --      |
+| info()           | (db *PouchDB) Info() (*js.Object, error)     | Yes     |
+| compact()        | --                                           | --      |
+| revsDiff()       | --                                           | --      |
+| defaults()       | --                                           | --      |
+| debug.enable()   | Debug(module string)                         | Yes     |
+| debug.disable()  | DebugDisable()                               | Yes     |
+| changes()        | --                                           | --      |
+| replicate()      | --                                           | --      |
+| sync()           | --                                           | --      |
+| getAttachment()  | --                                           | --      |
+| query()          | --                                           | --      |
+| on()             | --                                           | --      |
+| plugin()         | --                                           | --      |
