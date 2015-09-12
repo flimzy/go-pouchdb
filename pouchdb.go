@@ -14,9 +14,12 @@ package pouchdb
 
 import (
 	"encoding/json"
+	"errors"
+	"reflect"
 
 	"github.com/gopherjs/gopherjs/js"
 	// 	"github.com/gopherjs/jsbuiltin"
+	// 	"honnef.co/go/js/console"
 )
 
 var typeofFunc *js.Object
@@ -93,12 +96,15 @@ func (db *PouchDB) Destroy() error {
 	return err
 }
 
-func decodeJSON(input, output interface{}) error {
+// convertJSONObject takes an intterface{} and runs it through json.Marshal()
+// and json.Unmarshal() so that any struct tags will be applied.
+func convertJSONObject(input, output interface{}) error {
 	encoded, err := json.Marshal(input)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(encoded, output)
+	err = json.Unmarshal(encoded, output)
+	return err
 }
 
 // Put will create a new document or update an existing document.
@@ -125,7 +131,7 @@ func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 	if err != nil {
 		return err
 	}
-	return decodeJSON(obj, doc)
+	return convertJSONObject(obj, doc)
 }
 
 // Delete will delete the document.
@@ -136,9 +142,23 @@ func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 
 // BulkDocs will create, update or delete multiple documents.
 // See: http://pouchdb.com/api.html#batch_create
-// func (db *PouchDB) BulkDocs(args ...interface{}) {
-// 	db.o.Call("bulkDocs", args...)
-// }
+func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
+	s := reflect.ValueOf(docs)
+	if s.Kind() != reflect.Slice {
+		return nil, errors.New("docs must be a slice")
+	}
+	convertedDocs := make([]interface{}, s.Len())
+	for i := 0; i < s.Len(); i++ {
+		convertJSONObject(s.Index(i).Interface(), &(convertedDocs[i]))
+	}
+	// 	convertedDocs := docs.([]interface{})
+	// 	for i,d := range docs {
+	// 		convertJSONObject(d, &convertedDocs[i])
+	// // 	}
+	result := newResult()
+	db.o.Call("bulkDocs", convertedDocs, opts, result.Done)
+	return result.ReadBulkResults()
+}
 
 // AllDocs will fetch multiple documents.
 // See http://pouchdb.com/api.html#batch_fetch

@@ -32,6 +32,15 @@ func (pr *pouchResult) ReadResult() (Result, error) {
 	return result.Interface().(map[string]interface{}), err
 }
 
+func (pr *pouchResult) ReadBulkResults() ([]Result, error) {
+	result, err := pr.Read()
+	results := make([]Result, result.Length())
+	for i := 0; i < result.Length(); i++ {
+		results[i] = result.Index(i).Interface().(map[string]interface{})
+	}
+	return results, err
+}
+
 func (pr *pouchResult) Done(err *js.Object, result *js.Object) {
 	pr.resultChan <- &pouchResultTuple{result, err}
 }
