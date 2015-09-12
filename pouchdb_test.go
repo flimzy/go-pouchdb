@@ -4,12 +4,10 @@ package pouchdb
 
 import (
 	"testing"
-
-	"honnef.co/go/js/console"
 )
 
 func TestNew(t *testing.T) {
-console.Log("foo")
+// console.Log("foo")
 	db := New("testdb")
 	info,err := db.Info()
 	if err != nil {
