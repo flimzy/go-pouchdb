@@ -22,22 +22,9 @@ type PouchDB struct {
 	o *js.Object
 }
 
-type pouchResult struct {
-	result *js.Object
-	err    *js.Object
-}
-
 type Options map[string]interface{}
 
 type Result map[string]interface{}
-
-func (pr *pouchResult) Result() (Result, error) {
-	result := pr.result.Interface().(map[string]interface{})
-	if pr.err == nil {
-		return result, nil
-	}
-	return result, &js.Error{pr.err}
-}
 
 var GlobalPouch *js.Object
 
@@ -72,23 +59,17 @@ func NewFromOpts(opts Options) *PouchDB {
 // Info fetches information about a database.
 // See: http://pouchdb.com/api.html#database_information
 func (db *PouchDB) Info() (Result, error) {
-	resultChan := make(chan *pouchResult)
-	db.o.Call("info", func(err *js.Object, result *js.Object) {
-		resultChan <- &pouchResult{result, err}
-	})
-	result := <-resultChan
-	return result.Result()
+	result := newResult()
+	db.o.Call("info", result.Done)
+	return result.ReadResult()
 }
 
 // Deestroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy() error {
-	resultChan := make(chan *pouchResult)
-	db.o.Call("destroy", func(err *js.Object,result *js.Object) {
-		resultChan <- &pouchResult{result, err}
-	})
-	result := <-resultChan
-	_,err := result.Result()
+	result := newResult()
+	db.o.Call("destroy", result.Done)
+	_,err := result.Read()
 	return err
 }
 
@@ -163,10 +144,10 @@ func (db *PouchDB) Destroy() error {
 // Debug enables debugging for the specified module.
 // See: http://pouchdb.com/api.html#debug_mode
 func Debug(module string) {
-	js.Global.Get("PouchDB").Get("debug").Call("enable", module)
+	globalPouch().Get("debug").Call("enable", module)
 }
 
 // DebugDisable disables debugging.
 func DebugDisable() {
-	js.Global.Get("PouchDB").Get("debug").Call("disable")
+	globalPouch().Get("debug").Call("disable")
 }
