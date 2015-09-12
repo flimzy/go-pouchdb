@@ -15,8 +15,9 @@ The following table shows the status of each API method.
 | new()            | New(db_name string) *PouchDB                 |
 |                  | NewFromOpts(Options) *PouchDB                |
 | destroy()        | (db *PouchDB) Destroy() error                | No support for 'options' argument. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323).
-| put()            | (db *PouchDB) Put(doc interface{}) error     |
+| put()            | (db *PouchDB) Put(doc interface{}) (string, error) |
 | get()            | (db *PouchDB) Get(id string, doc interface{}, opts Options) error |
+| remove()         | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) |
 | bulkDocs()       | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) |
 | allDocs()        | --                                           |
 | viewCleanup()    | --                                           |

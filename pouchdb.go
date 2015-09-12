@@ -109,11 +109,16 @@ func convertJSONObject(input, output interface{}) error {
 
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
-func (db *PouchDB) Put(doc interface{}) error {
+func (db *PouchDB) Put(doc interface{}) (string, error) {
+	var convertedDoc interface{}
+	convertJSONObject(doc, &convertedDoc)
 	result := newResult()
-	db.o.Call("put", doc, result.Done)
-	_, err := result.Read()
-	return err
+	db.o.Call("put", convertedDoc, result.Done)
+	obj, err := result.ReadResult()
+	if err != nil {
+		return "", err
+	}
+	return obj["rev"].(string), nil
 }
 
 // Get retrieves a document, specified by docId.
@@ -134,11 +139,22 @@ func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 	return convertJSONObject(obj, doc)
 }
 
-// Delete will delete the document.
+// Remove will delete the document. The document must specify both _id and
+// _rev. On success, it returns the _rev of the new document with _delete set
+// to true.
+//
 // See: http://pouchdb.com/api.html#delete_document
-// func (db *PouchDB) Delete(args ...interface{}) {
-// 	db.o.Call("delete", args...)
-// }
+func (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) {
+	var convertedDoc interface{}
+	convertJSONObject(doc, &convertedDoc)
+	result := newResult()
+	db.o.Call("remove", convertedDoc, opts, result.Done)
+	obj, err := result.ReadResult()
+	if err != nil {
+		return "", err
+	}
+	return obj["rev"].(string), nil
+}
 
 // BulkDocs will create, update or delete multiple documents.
 // See: http://pouchdb.com/api.html#batch_create
@@ -151,10 +167,6 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 	for i := 0; i < s.Len(); i++ {
 		convertJSONObject(s.Index(i).Interface(), &(convertedDocs[i]))
 	}
-	// 	convertedDocs := docs.([]interface{})
-	// 	for i,d := range docs {
-	// 		convertJSONObject(d, &convertedDocs[i])
-	// // 	}
 	result := newResult()
 	db.o.Call("bulkDocs", convertedDocs, opts, result.Done)
 	return result.ReadBulkResults()

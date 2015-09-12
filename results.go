@@ -2,6 +2,7 @@ package pouchdb
 
 import (
 	"github.com/gopherjs/gopherjs/js"
+	// 	"honnef.co/go/js/console"
 )
 
 type pouchResultTuple struct {
@@ -29,6 +30,9 @@ func (pr *pouchResult) Read() (*js.Object, error) {
 
 func (pr *pouchResult) ReadResult() (Result, error) {
 	result, err := pr.Read()
+	if err != nil {
+		return Result{}, err
+	}
 	return result.Interface().(map[string]interface{}), err
 }
 
