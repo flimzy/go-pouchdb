@@ -89,9 +89,9 @@ func (db *PouchDB) Info() (Result, error) {
 
 // Deestroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
-func (db *PouchDB) Destroy() error {
+func (db *PouchDB) Destroy(opts Options) error {
 	result := newResult()
-	db.o.Call("destroy", result.Done)
+	db.o.Call("destroy", opts, result.Done)
 	_, err := result.Read()
 	return err
 }

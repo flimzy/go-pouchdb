@@ -4,6 +4,10 @@
 
 [GopherJS](http://www.gopherjs.org/) bindings for [PouchDB](http://pouchdb.com/).
 
+## Requirements
+
+This package requires PouchDB 4.0.2 or newer. This is due to a bug in earlier versions of PouchDB, which crashed when destroy() was passed with options. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323) for details.  While I would normally try to support older versions simultaneously, I suspect anyone using this package is likely to be using the latest version of PouchDB, so I expect this not to be an issue.  If you have a requirement to use this with an older version of PouchDB, and this bug is a problem for you, please open an issue, and I will try to find a work-around.
+
 ## Status
 
 This is a work in progress. Use at your own risk. Please contribute pull requests!
@@ -14,7 +18,7 @@ The following table shows the status of each API method.
 |------------------|----------------------------------------------|-----------
 | new()            | New(db_name string) *PouchDB                 |
 |                  | NewFromOpts(Options) *PouchDB                |
-| destroy()        | (db *PouchDB) Destroy() error                | No support for 'options' argument. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323).
+| destroy()        | (db *PouchDB) Destroy(Options) error               |
 | put()            | (db *PouchDB) Put(doc interface{}) (string, error) |
 | get()            | (db *PouchDB) Get(id string, doc interface{}, opts Options) error |
 | remove()         | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) |
