@@ -17,7 +17,7 @@ The following table shows the status of each API method.
 | destroy()        | (db *PouchDB) Destroy() error                | No support for 'options' argument. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323).
 | put()            | (db *PouchDB) Put(doc interface{}) error     |
 | get()            | (db *PouchDB) Get(id string, doc interface{}, opts Options) error |
-| bulkDocs()       | --                                           |
+| bulkDocs()       | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) |
 | allDocs()        | --                                           |
 | viewCleanup()    | --                                           |
 | info()           | (db *PouchDB) Info() (*js.Object, error)     |

@@ -4,7 +4,14 @@ package pouchdb
 
 import (
 	"testing"
+	// 	"honnef.co/go/js/console"
 )
+
+type TestDoc struct {
+	DocId  string `json:"_id"`
+	DocRev string `json:"_rev,omitempty"`
+	Value  string `json:"foo"`
+}
 
 func TestNew(t *testing.T) {
 	// console.Log("foo")
@@ -66,5 +73,31 @@ func TestPutGet(t *testing.T) {
 	}
 	if len(rev) == 0 {
 		t.Fatal("_rev is empty")
+	}
+}
+
+func TestBulkDocs(t *testing.T) {
+	db := New("testdb")
+	docs := []TestDoc{
+		TestDoc{
+			DocId: "foo",
+			Value: "foo",
+		},
+		TestDoc{
+			DocId: "bar",
+			Value: "bar",
+		},
+	}
+	results, err := db.BulkDocs(docs, Options{})
+	if err != nil {
+		t.Fatalf("Received error from BulkDocs: %s", err)
+	}
+	for i, doc := range docs {
+		if !results[i]["ok"].(bool) {
+			t.Fatalf("BulkDocs() failed")
+		}
+		if doc.DocId != results[i]["id"] {
+			t.Fatalf("BulkDocs() returned _id %s, expected %s", results[i]["id"], doc.DocId)
+		}
 	}
 }
