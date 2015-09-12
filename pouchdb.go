@@ -13,6 +13,8 @@
 package pouchdb
 
 import (
+	"encoding/json"
+
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
 	"honnef.co/go/js/console"
@@ -73,17 +75,40 @@ func (db *PouchDB) Destroy() error {
 	return err
 }
 
+func decodeJSON(input, output interface{}) error {
+	encoded,err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(encoded,output)
+}
+
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
-// func (db *PouchDB) Put(args ...interface{}) {
-// 	db.o.Call("put", args...)
-// }
+func (db *PouchDB) Put(doc interface{}) error {
+	result := newResult()
+	db.o.Call("put", doc, result.Done)
+	_,err := result.Read()
+	return err
+}
 
 // Get retrieves a document, specified by docId.
-// Seehttp://pouchdb.com/api.html#fetch_document
-// func (db *PouchDB) Get(args ...interface{}) {
-// 	db.o.Call("get", args...)
-// }
+// The document is unmarshalled into the given object.
+// Some fields (like _conflicts) will only be returned if the
+// options require it. Please refer to the CouchDB HTTP API documentation
+// for more information.
+//
+// See http://pouchdb.com/api.html#fetch_document
+// and http://docs.couchdb.org/en/latest/api/document/common.html?highlight=doc#get--db-docid
+func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
+	result := newResult()
+	db.o.Call("get", docId, opts, result.Done)
+	obj,err := result.ReadResult()
+	if err != nil {
+		return err
+	}
+	return decodeJSON(obj,doc)
+}
 
 // Delete will delete the document.
 // See: http://pouchdb.com/api.html#delete_document
