@@ -7,9 +7,9 @@ import (
 )
 
 func TestNew(t *testing.T) {
-// console.Log("foo")
+	// console.Log("foo")
 	db := New("testdb")
-	info,err := db.Info()
+	info, err := db.Info()
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
 	}
@@ -22,7 +22,7 @@ func TestNewFromOpts(t *testing.T) {
 	db := NewFromOpts(Options{
 		"name": "testdb",
 	})
-	info,err := db.Info()
+	info, err := db.Info()
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
 	}
@@ -60,7 +60,7 @@ func TestPutGet(t *testing.T) {
 	if doc["foo"] != doc["foo"] {
 		t.Fatalf("Retrieved unexpected payload 'foo': %s instead of %s", got["foo"], doc["foo"])
 	}
-	rev,ok := got["_rev"].(string)
+	rev, ok := got["_rev"].(string)
 	if !ok {
 		t.Fatal("_rev is not a string")
 	}

@@ -16,12 +16,13 @@ import (
 	"encoding/json"
 
 	"github.com/gopherjs/gopherjs/js"
-// 	"github.com/gopherjs/jsbuiltin"
+	// 	"github.com/gopherjs/jsbuiltin"
 )
 
 var typeofFunc *js.Object
+
 func initTypeof() {
-	typeofFunc = js.Global.Call("eval",`(function() {
+	typeofFunc = js.Global.Call("eval", `(function() {
 			return function (x) {
 				return typeof x
 			}
@@ -48,7 +49,7 @@ type Result map[string]interface{}
 var GlobalPouch *js.Object
 
 func globalPouch() *js.Object {
-// 	if GlobalPouch != nil && jsbuiltin.Typeof(GlobalPouch) != "undefined" {
+	// 	if GlobalPouch != nil && jsbuiltin.Typeof(GlobalPouch) != "undefined" {
 	if GlobalPouch != nil {
 		return GlobalPouch
 	}
@@ -58,7 +59,7 @@ func globalPouch() *js.Object {
 		// rather than from the current directory, which confuses nodejs
 		// as to where to search for modules
 		cwd := js.Global.Get("process").Call("cwd").String()
-		GlobalPouch = js.Global.Call("require",  cwd + "/node_modules/pouchdb")
+		GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
 	}
 	return GlobalPouch
 }
@@ -88,16 +89,16 @@ func (db *PouchDB) Info() (Result, error) {
 func (db *PouchDB) Destroy() error {
 	result := newResult()
 	db.o.Call("destroy", result.Done)
-	_,err := result.Read()
+	_, err := result.Read()
 	return err
 }
 
 func decodeJSON(input, output interface{}) error {
-	encoded,err := json.Marshal(input)
+	encoded, err := json.Marshal(input)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(encoded,output)
+	return json.Unmarshal(encoded, output)
 }
 
 // Put will create a new document or update an existing document.
@@ -105,7 +106,7 @@ func decodeJSON(input, output interface{}) error {
 func (db *PouchDB) Put(doc interface{}) error {
 	result := newResult()
 	db.o.Call("put", doc, result.Done)
-	_,err := result.Read()
+	_, err := result.Read()
 	return err
 }
 
@@ -120,11 +121,11 @@ func (db *PouchDB) Put(doc interface{}) error {
 func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 	result := newResult()
 	db.o.Call("get", docId, opts, result.Done)
-	obj,err := result.ReadResult()
+	obj, err := result.ReadResult()
 	if err != nil {
 		return err
 	}
-	return decodeJSON(obj,doc)
+	return decodeJSON(obj, doc)
 }
 
 // Delete will delete the document.

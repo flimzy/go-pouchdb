@@ -5,12 +5,12 @@ import (
 )
 
 type pouchResultTuple struct {
-	result	*js.Object
-	err		*js.Object
+	result *js.Object
+	err    *js.Object
 }
 
 type pouchResult struct {
-	resultChan		chan *pouchResultTuple
+	resultChan chan *pouchResultTuple
 }
 
 func newResult() *pouchResult {
@@ -27,7 +27,7 @@ func (pr *pouchResult) Read() (*js.Object, error) {
 	return rawResult.result, &js.Error{rawResult.err}
 }
 
-func (pr *pouchResult) ReadResult() (Result,error) {
+func (pr *pouchResult) ReadResult() (Result, error) {
 	result, err := pr.Read()
 	return result.Interface().(map[string]interface{}), err
 }
