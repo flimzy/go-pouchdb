@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/flimzy/go-pouchdb.svg?branch=master)](https://travis-ci.org/flimzy/go-pouchdb)
+
 # go-pouchdb
 
 [GopherJS](http://www.gopherjs.org/) bindings for [PouchDB](http://pouchdb.com/).
