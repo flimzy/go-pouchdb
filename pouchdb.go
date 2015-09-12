@@ -13,6 +13,8 @@
 package pouchdb
 
 import (
+	"encoding/json"
+
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
 	"honnef.co/go/js/console"
@@ -22,22 +24,9 @@ type PouchDB struct {
 	o *js.Object
 }
 
-type pouchResult struct {
-	result *js.Object
-	err    *js.Object
-}
-
 type Options map[string]interface{}
 
 type Result map[string]interface{}
-
-func (pr *pouchResult) Result() (Result, error) {
-	result := pr.result.Interface().(map[string]interface{})
-	if pr.err == nil {
-		return result, nil
-	}
-	return result, &js.Error{pr.err}
-}
 
 var GlobalPouch *js.Object
 
@@ -72,37 +61,54 @@ func NewFromOpts(opts Options) *PouchDB {
 // Info fetches information about a database.
 // See: http://pouchdb.com/api.html#database_information
 func (db *PouchDB) Info() (Result, error) {
-	resultChan := make(chan *pouchResult)
-	db.o.Call("info", func(err *js.Object, result *js.Object) {
-		resultChan <- &pouchResult{result, err}
-	})
-	result := <-resultChan
-	return result.Result()
+	result := newResult()
+	db.o.Call("info", result.Done)
+	return result.ReadResult()
 }
 
 // Deestroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy() error {
-	resultChan := make(chan *pouchResult)
-	db.o.Call("destroy", func(err *js.Object,result *js.Object) {
-		resultChan <- &pouchResult{result, err}
-	})
-	result := <-resultChan
-	_,err := result.Result()
+	result := newResult()
+	db.o.Call("destroy", result.Done)
+	_,err := result.Read()
 	return err
+}
+
+func decodeJSON(input, output interface{}) error {
+	encoded,err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(encoded,output)
 }
 
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
-// func (db *PouchDB) Put(args ...interface{}) {
-// 	db.o.Call("put", args...)
-// }
+func (db *PouchDB) Put(doc interface{}) error {
+	result := newResult()
+	db.o.Call("put", doc, result.Done)
+	_,err := result.Read()
+	return err
+}
 
 // Get retrieves a document, specified by docId.
-// Seehttp://pouchdb.com/api.html#fetch_document
-// func (db *PouchDB) Get(args ...interface{}) {
-// 	db.o.Call("get", args...)
-// }
+// The document is unmarshalled into the given object.
+// Some fields (like _conflicts) will only be returned if the
+// options require it. Please refer to the CouchDB HTTP API documentation
+// for more information.
+//
+// See http://pouchdb.com/api.html#fetch_document
+// and http://docs.couchdb.org/en/latest/api/document/common.html?highlight=doc#get--db-docid
+func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
+	result := newResult()
+	db.o.Call("get", docId, opts, result.Done)
+	obj,err := result.ReadResult()
+	if err != nil {
+		return err
+	}
+	return decodeJSON(obj,doc)
+}
 
 // Delete will delete the document.
 // See: http://pouchdb.com/api.html#delete_document
@@ -163,10 +169,10 @@ func (db *PouchDB) Destroy() error {
 // Debug enables debugging for the specified module.
 // See: http://pouchdb.com/api.html#debug_mode
 func Debug(module string) {
-	js.Global.Get("PouchDB").Get("debug").Call("enable", module)
+	globalPouch().Get("debug").Call("enable", module)
 }
 
 // DebugDisable disables debugging.
 func DebugDisable() {
-	js.Global.Get("PouchDB").Get("debug").Call("disable")
+	globalPouch().Get("debug").Call("disable")
 }
