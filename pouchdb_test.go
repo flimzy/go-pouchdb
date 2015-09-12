@@ -41,7 +41,7 @@ func TestNewFromOpts(t *testing.T) {
 
 func TestDestory(t *testing.T) {
 	db := New("testdb")
-	err := db.Destroy()
+	err := db.Destroy(Options{})
 	if err != nil {
 		t.Fatalf("Destroy() resulted in an error: %s", err)
 	}
@@ -104,7 +104,7 @@ func TestBulkDocs(t *testing.T) {
 			t.Fatalf("BulkDocs() returned _id %s, expected %s", results[i]["id"], doc.DocId)
 		}
 	}
-	db.Destroy()
+	db.Destroy(Options{})
 }
 
 func TestRemove(t *testing.T) {
