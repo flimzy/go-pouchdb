@@ -8,9 +8,10 @@ import (
 )
 
 type TestDoc struct {
-	DocId  string `json:"_id"`
-	DocRev string `json:"_rev,omitempty"`
-	Value  string `json:"foo"`
+	DocId      string `json:"_id"`
+	DocRev     string `json:"_rev,omitempty"`
+	DocDeleted bool   `json:"_deleted"`
+	Value      string `json:"foo"`
 }
 
 func TestNew(t *testing.T) {
@@ -52,7 +53,7 @@ func TestPutGet(t *testing.T) {
 		"_id": "foobar",
 		"foo": "bar",
 	}
-	err := db.Put(doc)
+	rev, err := db.Put(doc)
 	if err != nil {
 		t.Fatalf("Error calling Put(): %s", err)
 	}
@@ -63,6 +64,9 @@ func TestPutGet(t *testing.T) {
 	}
 	if got["_id"] != doc["_id"] {
 		t.Fatalf("Retrieved unexpected _id: %s instead of %s", got["_id"], doc["_id"])
+	}
+	if got["_rev"] != rev {
+		t.Fatalf("Retrieved unexpected rev: %s instead of %s", got["_rev"], rev)
 	}
 	if doc["foo"] != doc["foo"] {
 		t.Fatalf("Retrieved unexpected payload 'foo': %s instead of %s", got["foo"], doc["foo"])
@@ -99,5 +103,30 @@ func TestBulkDocs(t *testing.T) {
 		if doc.DocId != results[i]["id"] {
 			t.Fatalf("BulkDocs() returned _id %s, expected %s", results[i]["id"], doc.DocId)
 		}
+	}
+	db.Destroy()
+}
+
+func TestRemove(t *testing.T) {
+	db := New("testdb")
+	doc := TestDoc{
+		DocId: "foo",
+	}
+	rev, err := db.Put(doc)
+	if err != nil {
+		t.Fatalf("Failed to create document: %s", err)
+	}
+	doc.DocRev = rev
+	delRev, err := db.Remove(doc, Options{})
+	if err != nil {
+		t.Fatalf("Received error from Delete: %s", err)
+	}
+	var deletedDoc TestDoc
+	err = db.Get("foo", &deletedDoc, Options{"rev": delRev})
+	if err != nil {
+		t.Fatalf("Error fetching deleted doc: %s", err)
+	}
+	if !deletedDoc.DocDeleted {
+		t.Fatalf("Remove() did not properly delete the document")
 	}
 }
