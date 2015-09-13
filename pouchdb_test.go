@@ -4,10 +4,9 @@ package pouchdb
 
 import (
 	"bytes"
+	"reflect"
 	"strings"
 	"testing"
-
-	// 	"honnef.co/go/js/console"
 )
 
 type TestDoc struct {
@@ -215,4 +214,43 @@ func TestAttachments(t *testing.T) {
 		t.Fatal("DeleteAttachment() returned a 0-byte rev")
 	}
 	db.Destroy(Options{})
+}
+
+func TestReplicate(t *testing.T) {
+	New("db1").Destroy(Options{})
+	New("db2").Destroy(Options{})
+	db1 := New("db1")
+	doc1 := TestDoc{
+		DocId: "oink",
+		Value: "foo",
+	}
+	_, err := db1.Put(doc1)
+	if err != nil {
+		t.Fatalf("Error putting document: %s", err)
+	}
+	err = db1.Get(doc1.DocId, &doc1, Options{})
+	if err != nil {
+		t.Fatalf("Error re-reading doc1: %s", err)
+	}
+	db2 := New("db2")
+	results, err := Replicate(db1, db2, Options{})
+	if err != nil {
+		t.Fatalf("Error replicating: %s", err)
+	}
+	if x := int(results["docs_read"].(float64)); x != 1 {
+		t.Fatalf("Unexpected number of docs read: %d", x)
+	}
+	if x := int(results["docs_written"].(float64)); x != 1 {
+		t.Fatalf("Unexpected number of docs written: %d", x)
+	}
+	if x := int(results["doc_write_failures"].(float64)); x != 0 {
+		t.Fatalf("Unexpected number of failures: %d", x)
+	}
+	doc2 := TestDoc{}
+	db2.Get("oink", &doc2, Options{})
+	if !reflect.DeepEqual(doc1, doc2) {
+		t.Fatalf("Document is different after replication")
+	}
+	db1.Destroy(Options{})
+	db2.Destroy(Options{})
 }

@@ -22,7 +22,6 @@ import (
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
-	// 	"honnef.co/go/js/console"
 )
 
 type PouchDB struct {
@@ -254,10 +253,33 @@ func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
 // Replicate will replicate data from source to target in the foreground.
 // For "live" replication use ReplicateLive()
 // See: http://pouchdb.com/api.html#replication
-// func Replicate(source, target string, options Options) {
-// 	options["live"] = false
-// 	js.Global.Get("PouchDB").Call("replicate", options)
-// }
+func Replicate(source, target *PouchDB, opts Options) (Result, error) {
+	opts["live"] = false
+	rw := newResultWaiter()
+	repl := globalPouch().Call("replicate", source, target, opts)
+	repl.Call("then", func(r *js.Object) {
+		rw.Done(nil, r)
+	})
+	repl.Call("catch", func(e *js.Object) {
+		rw.Done(e, nil)
+	})
+	return rw.ReadResult()
+}
+
+// Sync data from src to target and target to src. This is a convenience method for bidirectional data replication.
+//
+// See http://pouchdb.com/api.html#sync
+func Sync(source, target *PouchDB, opts Options) ([]Result, error) {
+	results := make([]Result, 2)
+	result, err := Replicate(source, target, opts)
+	results[0] = result
+	if err != nil {
+		return results, err
+	}
+	result, err = Replicate(target, source, opts)
+	results[1] = result
+	return results, err
+}
 
 // Replicate will replicate data from source to target in the background.
 // This method returns a *ChangeFeed which can be used to monitor progress
