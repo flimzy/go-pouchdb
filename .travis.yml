@@ -10,3 +10,7 @@ before_install:
 install:
     - go get -u github.com/gopherjs/gopherjs
     - gopherjs get github.com/gopherjs/jsbuiltin
+
+script:
+    - diff -u <(echo -n) <(gofmt -d ./)
+    - gopherjs test

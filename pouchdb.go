@@ -18,28 +18,9 @@ import (
 	"reflect"
 
 	"github.com/gopherjs/gopherjs/js"
-	// 	"github.com/gopherjs/jsbuiltin"
+	"github.com/gopherjs/jsbuiltin"
 	// 	"honnef.co/go/js/console"
 )
-
-var typeofFunc *js.Object
-
-func initTypeof() {
-	typeofFunc = js.Global.Call("eval", `(function() {
-			return function (x) {
-				return typeof x
-			}
-		})()
-	`)
-}
-
-// Typeof returns the JavaScript type of the passed value
-func Typeof(value interface{}) string {
-	if typeofFunc == nil {
-		initTypeof()
-	}
-	return typeofFunc.Invoke(value).String()
-}
 
 type PouchDB struct {
 	o *js.Object
@@ -52,12 +33,11 @@ type Result map[string]interface{}
 var GlobalPouch *js.Object
 
 func globalPouch() *js.Object {
-	// 	if GlobalPouch != nil && jsbuiltin.Typeof(GlobalPouch) != "undefined" {
-	if GlobalPouch != nil {
+	if GlobalPouch != nil && jsbuiltin.TypeOf(GlobalPouch) != "undefined" {
 		return GlobalPouch
 	}
 	GlobalPouch := js.Global.Get("PouchDB")
-	if Typeof(GlobalPouch) == "undefined" {
+	if jsbuiltin.TypeOf(GlobalPouch) == "undefined" {
 		// This is necessary because gopherjs runs the test from /tmp
 		// rather than from the current directory, which confuses nodejs
 		// as to where to search for modules
