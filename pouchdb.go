@@ -13,12 +13,16 @@
 package pouchdb
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"reflect"
+	"strings"
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
+	// 	"honnef.co/go/js/console"
 )
 
 type PouchDB struct {
@@ -122,6 +126,95 @@ func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 		return err
 	}
 	return convertJSONObject(obj, doc)
+}
+
+// Attachment represents document attachments.
+// This structure is borrowed from http://godoc.org/github.com/fjl/go-couchdb#Attachment
+type Attachment struct {
+	Name string    // File name
+	Type string    // MIME type of the Body
+	MD5  []byte    // MD5 checksum of the Body
+	Body io.Reader // The body itself
+}
+
+// PutAttachment creates or updates an attachment. To create an attachment
+// on a non-existing document, pass an empty rev.
+//
+// See http://pouchdb.com/api.html#save_attachment and
+// http://godoc.org/github.com/fjl/go-couchdb#DB.PutAttachment
+func (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (newrev string, err error) {
+	rw := newResultWaiter()
+	db.o.Call("putAttachment", docid, att.Name, attachmentObject(att), att.Type, rw.Done)
+	obj, err := rw.ReadResult()
+	if err != nil {
+		return "", err
+	}
+	return obj["rev"].(string), nil
+}
+
+// attachmentObject converts an io.Reader to a JavaScrpit Buffer in node, or
+// a Blob in the browser
+func attachmentObject(att *Attachment) *js.Object {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(att.Body)
+	if buffer := js.Global.Get("Buffer"); jsbuiltin.TypeOf(buffer) == "function" {
+		// The Buffer type is supported, so we'll use that
+		return buffer.New(buf.String())
+	}
+	// We must be in the browser, so return a Blob instead
+	return js.Global.Get("Blob").New([]string{buf.String()}, att.Type)
+}
+
+func attachmentFromPouch(name string, obj *js.Object) *Attachment {
+	att := &Attachment{
+		Name: name,
+	}
+	var body string
+	if jsbuiltin.TypeOf(obj.Get("write")) == "function" {
+		// This looks like a Buffer object; we're in node
+		body = obj.Call("toString", "utf-8").String()
+	} else {
+		// We're in the browser
+		body = obj.String()
+		att.Type = obj.Get("type").String()
+	}
+	att.Body = strings.NewReader(body)
+	return att
+}
+
+// Attachment retrieves an attachment. The rev argument can be left empty to
+// retrieve the latest revision. The caller is responsible for closing the
+// attachment's Body if the returned error is nil.
+//
+// Note that PouchDB's getDocument() does not fetch meta data (except for the
+// MIME type in the browser only), so the MD5 sum and (in node) the content
+// type files will be empty.
+//
+// See http://pouchdb.com/api.html#get_attachment and
+// http://godoc.org/github.com/fjl/go-couchdb#Attachment
+func (db *PouchDB) Attachment(docid, name, rev string) (*Attachment, error) {
+	opts := Options{}
+	if len(rev) > 0 {
+		opts["rev"] = rev
+	}
+	rw := newResultWaiter()
+	db.o.Call("getAttachment", docid, name, opts, rw.Done)
+	obj, err := rw.Read()
+	if err != nil {
+		return nil, err
+	}
+	x := attachmentFromPouch(name, obj)
+	return x, nil
+}
+
+func (db *PouchDB) DeleteAttachment(docid, name, rev string) (newrev string, err error) {
+	rw := newResultWaiter()
+	db.o.Call("removeAttachment", docid, name, rev, rw.Done)
+	obj, err := rw.ReadResult()
+	if err != nil {
+		return "", err
+	}
+	return obj["rev"].(string), nil
 }
 
 // Remove will delete the document. The document must specify both _id and

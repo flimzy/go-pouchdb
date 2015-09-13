@@ -3,7 +3,11 @@
 package pouchdb
 
 import (
+	"bytes"
+	"strings"
 	"testing"
+
+	// 	"honnef.co/go/js/console"
 )
 
 type TestDoc struct {
@@ -177,6 +181,38 @@ func TestCompact(t *testing.T) {
 	err := db.Compact(Options{})
 	if err != nil {
 		t.Fatalf("Error compacting database: %s", err)
+	}
+	db.Destroy(Options{})
+}
+
+func TestAttachments(t *testing.T) {
+	db := New("testdb")
+	body1 := "A légpárnás hajóm tele van angolnákkal"
+	att1 := &Attachment{
+		Name: "foo.txt",
+		Type: "text/plain",
+		Body: strings.NewReader(body1),
+	}
+	rev, err := db.PutAttachment("foo", att1, "")
+	if err != nil {
+		t.Fatalf("Error putting attachment: %s", err)
+	}
+	if len(rev) == 0 {
+		t.Fatal("PutAttachment() returned a 0-byte rev")
+	}
+	att2, err := db.Attachment("foo", "foo.txt", "")
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(att2.Body)
+	body2 := buf.String()
+	if body1 != body2 {
+		t.Fatalf("The fetched body doesn't match. Got '%s' instead of '%s'", body2, body1)
+	}
+	rev, err = db.DeleteAttachment("foo", "foo.txt", rev)
+	if err != nil {
+		t.Fatalf("Error deleting attachment: %s", err)
+	}
+	if len(rev) == 0 {
+		t.Fatal("DeleteAttachment() returned a 0-byte rev")
 	}
 	db.Destroy(Options{})
 }
