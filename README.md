@@ -42,14 +42,22 @@ The following table shows the status of each API method.
 | debug.enable()     | Debug(module string)                                                                     |
 | debug.disable()    | DebugDisable()                                                                           |
 | changes()          | --                                                                                       |
-| replicate()        | --                                                                                       |
-| sync()             | --                                                                                       |
+| replicate()        | Replicate(source, target *PouchDB, opts Options) (Result, error)                         | "One-shot" replication only
+| replicate.to()     | n/a                                                                                      | Use Replicate()
+| replicate.from()   | n/a                                                                                      | Use Replicate()
+| sync()             | Sync(source, target *PouchDB, opts Options) ([]Results, error)                           |
 | putAttachment()    | (db \*PouchDB) PutAttachment(docid string, att \*Attachment, rev string) (string, error) | Only tested in Node
 | getAttachment()    | (db \*PouchDB) Attachment(docid, name, rev string) (\*Attachment, error)                 | Only tested in Node
 | removeAttachment() | (db \*PouchDB) DeleteAttachment(docid, name, rev string) (string, error)                 |
 | query()            | n/a                                                                                      | To be [deprecated](http://pouchdb.com/api.html#query_database).
 | on()               | --                                                                                       |
 | plugin()           | --                                                                                       |
+
+### TODO
+
+- Add support for Changes Feeds (for use by `changes()` and live replication)
+- Add support for plugins
+- Add support for 'created' and 'destroyed' event handlers (??)
 
 ## Implementation notes
 
