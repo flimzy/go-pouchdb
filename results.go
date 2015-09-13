@@ -21,12 +21,20 @@ func newResultWaiter() *resultWaiter {
 	}
 }
 
+// Read returns the raw results of a PouchDB callback
 func (pr *resultWaiter) Read() (*js.Object, error) {
 	rawResult := <-pr.resultChan
 	if rawResult.err == nil {
 		return rawResult.result, nil
 	}
 	return rawResult.result, &js.Error{rawResult.err}
+}
+
+// Error returns just the error of a PouchDB callback, for methods
+// which don't need the result value
+func (pr *resultWaiter) Error() error {
+	_, err := pr.Read()
+	return err
 }
 
 func (pr *resultWaiter) ReadResult() (Result, error) {

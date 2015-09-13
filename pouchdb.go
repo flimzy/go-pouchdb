@@ -71,8 +71,7 @@ func (db *PouchDB) Info() (Result, error) {
 func (db *PouchDB) Destroy(opts Options) error {
 	rw := newResultWaiter()
 	db.o.Call("destroy", opts, rw.Done)
-	_, err := rw.Read()
-	return err
+	return rw.Error()
 }
 
 // convertJSONObject takes an intterface{} and runs it through json.Marshal()
@@ -82,8 +81,7 @@ func convertJSONObject(input, output interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(encoded, output)
-	return err
+	return json.Unmarshal(encoded, output)
 }
 
 // convertJSObject converts the provided *js.Object to an interface{} then
@@ -190,28 +188,28 @@ func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
 // See: http://pouchdb.com/api.html#replication
 
 // ViewCleanup cleans up any stale map/reduce indexes.
+//
 // See: http://pouchdb.com/api.html#view_cleanup
-// func (db *PouchDB) ViewCleanup(fn interface{}) {
-// 	db.o.Call("viewCleanup", fn)
-// }
+func (db *PouchDB) ViewCleanup() error {
+	rw := newResultWaiter()
+	db.o.Call("viewCleanup", rw.Done)
+	return rw.Error()
+}
 
 // Compact triggers a compaction operation in the local or remote database.
+//
 // See: http://pouchdb.com/api.html#compaction
-// func (db *PouchDB) Compact(args ...interface{}) {
-// 	db.o.Call("compact", args...)
-// }
+func (db *PouchDB) Compact(opts Options) error {
+	rw := newResultWaiter()
+	db.o.Call("compact", opts, rw.Done)
+	return rw.Error()
+}
 
 // RevsDiff will, given a set of document/revision IDs return the subset of
 // those that do not correspond to revisions stored in the database.
 // See: http://pouchdb.com/api.html#revisions_diff
 // func (db *PouchDB) RevsDiff(diff *js.Object, fn interface{}) {
 // 	db.o.Call("revsDiff", diff, fn)
-// }
-
-// Defaults sets default options.
-// See: http://pouchdb.com/api.html#defaults
-// func (db *PouchDB) Defaults(opts *js.Object) {
-// 	db.o.Call("defaults", opts)
 // }
 
 // Debug enables debugging for the specified module.
