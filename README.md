@@ -69,5 +69,4 @@ Related to this, rather than methods such as `Get()` simply returning an object,
 
 ## License
 
-This software is released under the terms of the MIT license. See LICENCE.md for details.
-
+This software is released under the terms of the Apache 2.0 license. See LICENCE.md, or read the [full license](http://www.apache.org/licenses/LICENSE-2.0).
