@@ -23,6 +23,7 @@ func TestNew(t *testing.T) {
 	if info["db_name"] != "testdb" {
 		t.Fatalf("Info() returned unexpected db_name '%s'", info["db_name"])
 	}
+	db.Destroy(Options{})
 }
 
 func TestNewFromOpts(t *testing.T) {
@@ -36,6 +37,7 @@ func TestNewFromOpts(t *testing.T) {
 	if info["db_name"] != "testdb" {
 		t.Fatalf("Info() returned unexpected db_name '%s'", info["db_name"])
 	}
+	db.Destroy(Options{})
 }
 
 func TestDestory(t *testing.T) {
@@ -157,6 +159,24 @@ func TestRemove(t *testing.T) {
 	}
 	if !deletedDoc.DocDeleted {
 		t.Fatalf("Remove() did not properly delete the document")
+	}
+	db.Destroy(Options{})
+}
+
+func TestViewCleanup(t *testing.T) {
+	db := New("testdb")
+	err := db.ViewCleanup()
+	if err != nil {
+		t.Fatalf("Error cleaning up views: %s", err)
+	}
+	db.Destroy(Options{})
+}
+
+func TestCompact(t *testing.T) {
+	db := New("testdb")
+	err := db.Compact(Options{})
+	if err != nil {
+		t.Fatalf("Error compacting database: %s", err)
 	}
 	db.Destroy(Options{})
 }

@@ -24,18 +24,18 @@ The following table shows the status of each API method.
 | remove()         | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) |
 | bulkDocs()       | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) |
 | allDocs()        | (db *PouchDB) AllDocs(result interface{}, opts Options) error            |
-| viewCleanup()    | --                                           |
+| viewCleanup()    | (db *PouchDB) ViewCleanup() error                                        |
 | info()           | (db *PouchDB) Info() (*js.Object, error)     |
-| compact()        | --                                           |
+| compact()        | (db *PouchDB) Compact(opts Options) error                                |
 | revsDiff()       | --                                           |
-| defaults()       | --                                           |
+| defaults()       | n/a                                                                      | Pass options to New() instead
 | debug.enable()   | Debug(module string)                         |
 | debug.disable()  | DebugDisable()                               |
 | changes()        | --                                           |
 | replicate()      | --                                           |
 | sync()           | --                                           |
 | getAttachment()  | --                                           |
-| query()          | --                                           |
+| query()          | n/a                                                                      | To be deprecated. See [here](http://pouchdb.com/api.html#query_database)
 | on()             | --                                           |
 | plugin()         | --                                           |
 
