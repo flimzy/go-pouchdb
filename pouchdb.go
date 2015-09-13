@@ -98,16 +98,12 @@ func convertJSObject(jsObj *js.Object, output interface{}) error {
 
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
-func (db *PouchDB) Put(doc interface{}) (string, error) {
+func (db *PouchDB) Put(doc interface{}) (newrev string, err error) {
 	var convertedDoc interface{}
 	convertJSONObject(doc, &convertedDoc)
 	rw := newResultWaiter()
 	db.o.Call("put", convertedDoc, rw.Done)
-	obj, err := rw.ReadResult()
-	if err != nil {
-		return "", err
-	}
-	return obj["rev"].(string), nil
+	return rw.ReadRev()
 }
 
 // Get retrieves a document, specified by docId.
@@ -145,11 +141,7 @@ type Attachment struct {
 func (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (newrev string, err error) {
 	rw := newResultWaiter()
 	db.o.Call("putAttachment", docid, att.Name, attachmentObject(att), att.Type, rw.Done)
-	obj, err := rw.ReadResult()
-	if err != nil {
-		return "", err
-	}
-	return obj["rev"].(string), nil
+	return rw.ReadRev()
 }
 
 // attachmentObject converts an io.Reader to a JavaScrpit Buffer in node, or
@@ -210,11 +202,7 @@ func (db *PouchDB) Attachment(docid, name, rev string) (*Attachment, error) {
 func (db *PouchDB) DeleteAttachment(docid, name, rev string) (newrev string, err error) {
 	rw := newResultWaiter()
 	db.o.Call("removeAttachment", docid, name, rev, rw.Done)
-	obj, err := rw.ReadResult()
-	if err != nil {
-		return "", err
-	}
-	return obj["rev"].(string), nil
+	return rw.ReadRev()
 }
 
 // Remove will delete the document. The document must specify both _id and
@@ -222,16 +210,12 @@ func (db *PouchDB) DeleteAttachment(docid, name, rev string) (newrev string, err
 // to true.
 //
 // See: http://pouchdb.com/api.html#delete_document
-func (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) {
+func (db *PouchDB) Remove(doc interface{}, opts Options) (newrev string, err error) {
 	var convertedDoc interface{}
 	convertJSONObject(doc, &convertedDoc)
 	rw := newResultWaiter()
 	db.o.Call("remove", convertedDoc, opts, rw.Done)
-	obj, err := rw.ReadResult()
-	if err != nil {
-		return "", err
-	}
-	return obj["rev"].(string), nil
+	return rw.ReadRev()
 }
 
 // BulkDocs will create, update or delete multiple documents.

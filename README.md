@@ -19,9 +19,9 @@ The following table shows the status of each API method.
 | new()              | New(db_name string) *PouchDB                                                           |
 |                    | NewFromOpts(Options) *PouchDB                                                          |
 | destroy()          | (db *PouchDB) Destroy(Options) error                                                   |
-| put()              | (db *PouchDB) Put(doc interface{}) (string, error)                                     |
+| put()              | (db *PouchDB) Put(doc interface{}) (newrev string, err error)                          |
 | get()              | (db *PouchDB) Get(id string, doc interface{}, opts Options) error                      |
-| remove()           | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error)                    |
+| remove()           | (db *PouchDB) Remove(doc interface{}, opts Options) (newrev string, err error)         |
 | bulkDocs()         | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error)               |
 | allDocs()          | (db *PouchDB) AllDocs(result interface{}, opts Options) error                          |
 | viewCleanup()      | (db *PouchDB) ViewCleanup() error                                                      |
