@@ -23,7 +23,7 @@ The following table shows the status of each API method.
 | get()            | (db *PouchDB) Get(id string, doc interface{}, opts Options) error |
 | remove()         | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) |
 | bulkDocs()       | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) |
-| allDocs()        | --                                           |
+| allDocs()        | (db *PouchDB) AllDocs(result interface{}, opts Options) error            |
 | viewCleanup()    | --                                           |
 | info()           | (db *PouchDB) Info() (*js.Object, error)     |
 | compact()        | --                                           |

@@ -1,26 +1,27 @@
+// +build js
+
 package pouchdb
 
 import (
 	"github.com/gopherjs/gopherjs/js"
-	// 	"honnef.co/go/js/console"
 )
 
-type pouchResultTuple struct {
+type resultWaiterTuple struct {
 	result *js.Object
 	err    *js.Object
 }
 
-type pouchResult struct {
-	resultChan chan *pouchResultTuple
+type resultWaiter struct {
+	resultChan chan *resultWaiterTuple
 }
 
-func newResult() *pouchResult {
-	return &pouchResult{
-		make(chan *pouchResultTuple),
+func newResultWaiter() *resultWaiter {
+	return &resultWaiter{
+		make(chan *resultWaiterTuple),
 	}
 }
 
-func (pr *pouchResult) Read() (*js.Object, error) {
+func (pr *resultWaiter) Read() (*js.Object, error) {
 	rawResult := <-pr.resultChan
 	if rawResult.err == nil {
 		return rawResult.result, nil
@@ -28,7 +29,7 @@ func (pr *pouchResult) Read() (*js.Object, error) {
 	return rawResult.result, &js.Error{rawResult.err}
 }
 
-func (pr *pouchResult) ReadResult() (Result, error) {
+func (pr *resultWaiter) ReadResult() (Result, error) {
 	result, err := pr.Read()
 	if err != nil {
 		return Result{}, err
@@ -36,7 +37,7 @@ func (pr *pouchResult) ReadResult() (Result, error) {
 	return result.Interface().(map[string]interface{}), err
 }
 
-func (pr *pouchResult) ReadBulkResults() ([]Result, error) {
+func (pr *resultWaiter) ReadBulkResults() ([]Result, error) {
 	result, err := pr.Read()
 	results := make([]Result, result.Length())
 	for i := 0; i < result.Length(); i++ {
@@ -45,6 +46,6 @@ func (pr *pouchResult) ReadBulkResults() ([]Result, error) {
 	return results, err
 }
 
-func (pr *pouchResult) Done(err *js.Object, result *js.Object) {
-	pr.resultChan <- &pouchResultTuple{result, err}
+func (pr *resultWaiter) Done(err *js.Object, result *js.Object) {
+	pr.resultChan <- &resultWaiterTuple{result, err}
 }

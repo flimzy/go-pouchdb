@@ -4,7 +4,6 @@ package pouchdb
 
 import (
 	"testing"
-	// 	"honnef.co/go/js/console"
 )
 
 type TestDoc struct {
@@ -78,6 +77,19 @@ func TestPutGet(t *testing.T) {
 	if len(rev) == 0 {
 		t.Fatal("_rev is empty")
 	}
+	db.Destroy(Options{})
+}
+
+type TestRow struct {
+	Id  string  `json:"id"`
+	Key string  `json:"key"`
+	Doc TestDoc `json:"doc"`
+}
+
+type TestDocCollection struct {
+	TotalRows int       `json:"total_rows"`
+	Offset    int       `json:"offset"`
+	Rows      []TestRow `json:"rows"`
 }
 
 func TestBulkDocs(t *testing.T) {
@@ -102,6 +114,23 @@ func TestBulkDocs(t *testing.T) {
 		}
 		if doc.DocId != results[i]["id"] {
 			t.Fatalf("BulkDocs() returned _id %s, expected %s", results[i]["id"], doc.DocId)
+		}
+	}
+	// test AllDocs()
+	allDocs := TestDocCollection{}
+	db.AllDocs(&allDocs, Options{
+		"include_docs": true,
+	})
+	if allDocs.TotalRows != 2 {
+		t.Fatalf("Got an unexpected number of results: %d", allDocs.TotalRows)
+	}
+	if allDocs.Offset != 0 {
+		t.Fatalf("Got an unexpected offset: %d", allDocs.Offset)
+	}
+	for _, row := range allDocs.Rows {
+		doc := row.Doc
+		if doc.DocId != "foo" && doc.DocId != "bar" {
+			t.Fatalf("Unexpected _id in result set: %s", doc.DocId)
 		}
 	}
 	db.Destroy(Options{})
@@ -129,4 +158,5 @@ func TestRemove(t *testing.T) {
 	if !deletedDoc.DocDeleted {
 		t.Fatalf("Remove() did not properly delete the document")
 	}
+	db.Destroy(Options{})
 }

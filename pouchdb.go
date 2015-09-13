@@ -19,7 +19,6 @@ import (
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
-	// 	"honnef.co/go/js/console"
 )
 
 type PouchDB struct {
@@ -62,17 +61,17 @@ func NewFromOpts(opts Options) *PouchDB {
 // Info fetches information about a database.
 // See: http://pouchdb.com/api.html#database_information
 func (db *PouchDB) Info() (Result, error) {
-	result := newResult()
-	db.o.Call("info", result.Done)
-	return result.ReadResult()
+	rw := newResultWaiter()
+	db.o.Call("info", rw.Done)
+	return rw.ReadResult()
 }
 
 // Deestroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy(opts Options) error {
-	result := newResult()
-	db.o.Call("destroy", opts, result.Done)
-	_, err := result.Read()
+	rw := newResultWaiter()
+	db.o.Call("destroy", opts, rw.Done)
+	_, err := rw.Read()
 	return err
 }
 
@@ -87,14 +86,22 @@ func convertJSONObject(input, output interface{}) error {
 	return err
 }
 
+// convertJSObject converts the provided *js.Object to an interface{} then
+// calls convertJSONObject. This is necessary for objects, because json.Marshal
+// ignores any unexported fields in objects, and this includes practically
+// everything inside a js.Object.
+func convertJSObject(jsObj *js.Object, output interface{}) error {
+	return convertJSONObject(jsObj.Interface(), output)
+}
+
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
 func (db *PouchDB) Put(doc interface{}) (string, error) {
 	var convertedDoc interface{}
 	convertJSONObject(doc, &convertedDoc)
-	result := newResult()
-	db.o.Call("put", convertedDoc, result.Done)
-	obj, err := result.ReadResult()
+	rw := newResultWaiter()
+	db.o.Call("put", convertedDoc, rw.Done)
+	obj, err := rw.ReadResult()
 	if err != nil {
 		return "", err
 	}
@@ -110,9 +117,9 @@ func (db *PouchDB) Put(doc interface{}) (string, error) {
 // See http://pouchdb.com/api.html#fetch_document
 // and http://docs.couchdb.org/en/latest/api/document/common.html?highlight=doc#get--db-docid
 func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
-	result := newResult()
-	db.o.Call("get", docId, opts, result.Done)
-	obj, err := result.ReadResult()
+	rw := newResultWaiter()
+	db.o.Call("get", docId, opts, rw.Done)
+	obj, err := rw.ReadResult()
 	if err != nil {
 		return err
 	}
@@ -127,9 +134,9 @@ func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
 func (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) {
 	var convertedDoc interface{}
 	convertJSONObject(doc, &convertedDoc)
-	result := newResult()
-	db.o.Call("remove", convertedDoc, opts, result.Done)
-	obj, err := result.ReadResult()
+	rw := newResultWaiter()
+	db.o.Call("remove", convertedDoc, opts, rw.Done)
+	obj, err := rw.ReadResult()
 	if err != nil {
 		return "", err
 	}
@@ -147,16 +154,27 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 	for i := 0; i < s.Len(); i++ {
 		convertJSONObject(s.Index(i).Interface(), &(convertedDocs[i]))
 	}
-	result := newResult()
-	db.o.Call("bulkDocs", convertedDocs, opts, result.Done)
-	return result.ReadBulkResults()
+	rw := newResultWaiter()
+	db.o.Call("bulkDocs", convertedDocs, opts, rw.Done)
+	return rw.ReadBulkResults()
 }
 
 // AllDocs will fetch multiple documents.
-// See http://pouchdb.com/api.html#batch_fetch
-// func (db *PouchDB) AllDocs(args ...interface{}) {
-// 	db.o.Call("allDocs", args...)
-// }
+// The output of the query is unmarshalled into the given result. The format
+// of the result depends on the options. Please refer to the CouchDB HTTP API
+//  documentation for all the possible options that can be set
+//
+// See http://pouchdb.com/api.html#batch_fetch and
+// http://docs.couchdb.org/en/latest/api/database/bulk-api.html#db-all-docs
+func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
+	rw := newResultWaiter()
+	db.o.Call("allDocs", opts, rw.Done)
+	obj, err := rw.Read()
+	if err != nil {
+		return err
+	}
+	return convertJSObject(obj, &result)
+}
 
 // Replicate will replicate data from source to target in the foreground.
 // For "live" replication use ReplicateLive()
