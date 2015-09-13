@@ -22,8 +22,8 @@ func newResultWaiter() *resultWaiter {
 }
 
 // Read returns the raw results of a PouchDB callback
-func (pr *resultWaiter) Read() (*js.Object, error) {
-	rawResult := <-pr.resultChan
+func (rw *resultWaiter) Read() (*js.Object, error) {
+	rawResult := <-rw.resultChan
 	if rawResult.err == nil {
 		return rawResult.result, nil
 	}
@@ -32,21 +32,29 @@ func (pr *resultWaiter) Read() (*js.Object, error) {
 
 // Error returns just the error of a PouchDB callback, for methods
 // which don't need the result value
-func (pr *resultWaiter) Error() error {
-	_, err := pr.Read()
+func (rw *resultWaiter) Error() error {
+	_, err := rw.Read()
 	return err
 }
 
-func (pr *resultWaiter) ReadResult() (Result, error) {
-	result, err := pr.Read()
+func (rw *resultWaiter) ReadRev() (string, error) {
+	obj, err := rw.ReadResult()
+	if err != nil {
+		return "", err
+	}
+	return obj["rev"].(string), nil
+}
+
+func (rw *resultWaiter) ReadResult() (Result, error) {
+	result, err := rw.Read()
 	if err != nil {
 		return Result{}, err
 	}
 	return result.Interface().(map[string]interface{}), err
 }
 
-func (pr *resultWaiter) ReadBulkResults() ([]Result, error) {
-	result, err := pr.Read()
+func (rw *resultWaiter) ReadBulkResults() ([]Result, error) {
+	result, err := rw.Read()
 	results := make([]Result, result.Length())
 	for i := 0; i < result.Length(); i++ {
 		results[i] = result.Index(i).Interface().(map[string]interface{})
@@ -54,6 +62,6 @@ func (pr *resultWaiter) ReadBulkResults() ([]Result, error) {
 	return results, err
 }
 
-func (pr *resultWaiter) Done(err *js.Object, result *js.Object) {
-	pr.resultChan <- &resultWaiterTuple{result, err}
+func (rw *resultWaiter) Done(err *js.Object, result *js.Object) {
+	rw.resultChan <- &resultWaiterTuple{result, err}
 }

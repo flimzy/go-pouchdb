@@ -14,30 +14,32 @@ This is a work in progress. Use at your own risk. Please contribute pull request
 
 The following table shows the status of each API method.
 
-| PouchDB name     | go-pouchdb signature(s)                      | Comments
-|------------------|----------------------------------------------|-----------
-| new()            | New(db_name string) *PouchDB                 |
-|                  | NewFromOpts(Options) *PouchDB                |
-| destroy()        | (db *PouchDB) Destroy(Options) error               |
-| put()            | (db *PouchDB) Put(doc interface{}) (string, error) |
-| get()            | (db *PouchDB) Get(id string, doc interface{}, opts Options) error |
-| remove()         | (db *PouchDB) Remove(doc interface{}, opts Options) (string, error) |
-| bulkDocs()       | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) |
-| allDocs()        | (db *PouchDB) AllDocs(result interface{}, opts Options) error            |
-| viewCleanup()    | (db *PouchDB) ViewCleanup() error                                        |
-| info()           | (db *PouchDB) Info() (*js.Object, error)     |
-| compact()        | (db *PouchDB) Compact(opts Options) error                                |
-| revsDiff()       | --                                           |
-| defaults()       | n/a                                                                      | Pass options to New() instead
-| debug.enable()   | Debug(module string)                         |
-| debug.disable()  | DebugDisable()                               |
-| changes()        | --                                           |
-| replicate()      | --                                           |
-| sync()           | --                                           |
-| getAttachment()  | --                                           |
-| query()          | n/a                                                                      | To be deprecated. See [here](http://pouchdb.com/api.html#query_database)
-| on()             | --                                           |
-| plugin()         | --                                           |
+| PouchDB name       | go-pouchdb signature(s)                                                                | Comments
+|--------------------|----------------------------------------------------------------------------------------|-----------
+| new()              | New(db_name string) *PouchDB                                                           |
+|                    | NewFromOpts(Options) *PouchDB                                                          |
+| destroy()          | (db *PouchDB) Destroy(Options) error                                                   |
+| put()              | (db *PouchDB) Put(doc interface{}) (newrev string, err error)                          |
+| get()              | (db *PouchDB) Get(id string, doc interface{}, opts Options) error                      |
+| remove()           | (db *PouchDB) Remove(doc interface{}, opts Options) (newrev string, err error)         |
+| bulkDocs()         | (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error)               |
+| allDocs()          | (db *PouchDB) AllDocs(result interface{}, opts Options) error                          |
+| viewCleanup()      | (db *PouchDB) ViewCleanup() error                                                      |
+| info()             | (db *PouchDB) Info() (*js.Object, error)                                               |
+| compact()          | (db *PouchDB) Compact(opts Options) error                                              |
+| revsDiff()         | --                                                                                     |
+| defaults()         | n/a                                                                                    | Pass options to New() instead
+| debug.enable()     | Debug(module string)                                                                   |
+| debug.disable()    | DebugDisable()                                                                         |
+| changes()          | --                                                                                     |
+| replicate()        | --                                                                                     |
+| sync()             | --                                                                                     |
+| putAttachment()    | (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (string, error) | Only tested in Node
+| getAttachment()    | (db *PouchDB) Attachment(docid, name, rev string) (*Attachment, error)                 | Only tested in Node
+| removeAttachment() | (db *PouchDB) DeleteAttachment(docid, name, rev string) (string, error)                |
+| query()            | n/a                                                                                    | To be [deprecated](http://pouchdb.com/api.html#query_database).
+| on()               | --                                                                                     |
+| plugin()           | --                                                                                     |
 
 ## Implementation notes
 
