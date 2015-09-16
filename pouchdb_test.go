@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/gopherjs/gopherjs/js"
 )
 
 type TestDoc struct {
@@ -14,6 +16,14 @@ type TestDoc struct {
 	DocRev     string `json:"_rev,omitempty"`
 	DocDeleted bool   `json:"_deleted"`
 	Value      string `json:"foo"`
+}
+
+func init() {
+	// This is necessary because gopherjs runs the test from /tmp
+	// rather than from the current directory, which confuses nodejs
+	// as to where to search for modules
+	cwd := js.Global.Get("process").Call("cwd").String()
+	GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
 }
 
 func TestNew(t *testing.T) {
