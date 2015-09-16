@@ -32,6 +32,11 @@ type Options map[string]interface{}
 
 type Result map[string]interface{}
 
+// GlobalPouch is the global pouchdb object. The package will look for it in
+// the global object (js.Global), or try to require it if it is not found. If
+// this does not work for you, you ought to set it explicitly yourself:
+//
+//    pouchdb.GlobalPouch = js.Global.Call("require", "/path/to/your/copy/of/pouchdb")
 var GlobalPouch *js.Object
 
 func globalPouch() *js.Object {
@@ -40,11 +45,7 @@ func globalPouch() *js.Object {
 	}
 	GlobalPouch := js.Global.Get("PouchDB")
 	if jsbuiltin.TypeOf(GlobalPouch) == "undefined" {
-		// This is necessary because gopherjs runs the test from /tmp
-		// rather than from the current directory, which confuses nodejs
-		// as to where to search for modules
-		cwd := js.Global.Get("process").Call("cwd").String()
-		GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
+		GlobalPouch = js.Global.Call("require", "pouchdb")
 	}
 	return GlobalPouch
 }
@@ -62,6 +63,7 @@ func NewFromOpts(opts Options) *PouchDB {
 }
 
 // Info fetches information about a database.
+//
 // See: http://pouchdb.com/api.html#database_information
 func (db *PouchDB) Info() (Result, error) {
 	rw := newResultWaiter()
