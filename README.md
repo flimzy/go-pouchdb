@@ -49,7 +49,8 @@ The following table shows the status of each API method.
 | putAttachment()    | (db \*PouchDB) PutAttachment(docid string, att \*Attachment, rev string) (string, error) | Only tested in Node
 | getAttachment()    | (db \*PouchDB) Attachment(docid, name, rev string) (\*Attachment, error)                 | Only tested in Node
 | removeAttachment() | (db \*PouchDB) DeleteAttachment(docid, name, rev string) (string, error)                 |
-| query()            | n/a                                                                                      | To be [deprecated](http://pouchdb.com/api.html#query_database).
+| query()            | (db \*PouchDB) Query(view string, result interface{}, opts Options) error                |
+| query()            | (db \*PouchDB) QueryFunc(view MapFunc, result interface{}, opts Options) error           |
 | on()               | --                                                                                       |
 | plugin()           | --                                                                                       |
 
@@ -63,7 +64,7 @@ The following table shows the status of each API method.
 
 ### On the handling of JSON
 
-Go has some spiffy JSON capabilities that don't exist in JavaScript. Of particular note, the `[encoding/json](http://golang.org/pkg/encoding/json/)` package understands special [struct tags](http://stackoverflow.com/q/10858787/13860), and does some handy key-name manipulation for us. However, PouchDB gives us already-parsed JSON objects, which means we can't take advantage of Go's enhanced JSON handling.  To get around this, every document read from PouchDB is first converted back into JSON with the `json.Marshal()` method, then converted back into an object, this time as a native Go object. And when putting documents into PouchDB, the reverse is done. This allows you to take advantage of Go's "superior" (or at least more idiomatic) JSON handling.
+Go has some spiffy JSON capabilities that don't exist in JavaScript. Of particular note, the [encoding/json](http://golang.org/pkg/encoding/json/) package understands special [struct tags](http://stackoverflow.com/q/10858787/13860), and does some handy key-name manipulation for us. However, PouchDB gives us already-parsed JSON objects, which means we can't take advantage of Go's enhanced JSON handling.  To get around this, every document read from PouchDB is first converted back into JSON with the `json.Marshal()` method, then converted back into an object, this time as a native Go object. And when putting documents into PouchDB, the reverse is done. This allows you to take advantage of Go's "superior" (or at least more idiomatic) JSON handling.
 
 Related to this, rather than methods such as `Get()` simply returning an object, as they do in PouchDB, they take a document reference as an argument, and assign the document to this reference. This allows you to provide a prescribed data type into which the document is expected to fit. This is how the popular [fjl/go-couchdb](https://github.com/fjl/go-couchdb) library works, too. In fact, I have copied a lot from fjl in this package.
 

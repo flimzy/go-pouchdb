@@ -220,6 +220,7 @@ func (db *PouchDB) Remove(doc interface{}, opts Options) (newrev string, err err
 }
 
 // BulkDocs will create, update or delete multiple documents.
+//
 // See: http://pouchdb.com/api.html#batch_create
 func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 	s := reflect.ValueOf(docs)
@@ -245,6 +246,32 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
 	rw := newResultWaiter()
 	db.o.Call("allDocs", opts, rw.Done)
+	obj, err := rw.Read()
+	if err != nil {
+		return err
+	}
+	return convertJSObject(obj, &result)
+}
+
+// Invoke a map/reduce function, which allows you to perform more complex
+// queries on PouchDB than what you get with allDocs().
+//
+// See http://pouchdb.com/api.html#query_database
+func (db *PouchDB) Query(view string, result interface{}, opts Options) error {
+	rw := newResultWaiter()
+	db.o.Call("query", view, opts, rw.Done)
+	obj, err := rw.Read()
+	if err != nil {
+		return err
+	}
+	return convertJSObject(obj, &result)
+}
+
+type MapFunc func(string)
+
+func (db *PouchDB) QueryFunc(fn MapFunc, result interface{}, opts Options) error {
+	rw := newResultWaiter()
+	db.o.Call("query", fn, opts, rw.Done)
 	obj, err := rw.Read()
 	if err != nil {
 		return err
