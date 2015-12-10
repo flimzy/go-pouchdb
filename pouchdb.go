@@ -45,9 +45,35 @@ func globalPouch() *js.Object {
 	}
 	GlobalPouch := js.Global.Get("PouchDB")
 	if jsbuiltin.TypeOf(GlobalPouch) == "undefined" {
-		GlobalPouch = js.Global.Call("require", "pouchdb")
+		GlobalPouch = js.Global.Call("require", "/home/jonhall/go/src/github.com/flimzy/go-pouchdb/node_modules/pouchdb")
 	}
 	return GlobalPouch
+}
+
+// Plugin loads the specified plugin. There is no support for inline plugins in the form:
+//
+//     PouchDB.plugin({
+//         methodName: myFunction
+//     })
+//
+// If you need this functionality, you will need to provide it outside of Go, such
+// as with a *.inc.js file.
+//
+// Once a plugin is loaded, you can access any new methods created by the plugin
+// with the Call() method.
+func Plugin(name string) {
+	globalPouch().Call("require", name)
+}
+
+// Debug enables debugging for the specified module.
+// See: http://pouchdb.com/api.html#debug_mode
+func Debug(module string) {
+	globalPouch().Get("debug").Call("enable", module)
+}
+
+// DebugDisable disables debugging.
+func DebugDisable() {
+	globalPouch().Get("debug").Call("disable")
 }
 
 // New creates a database or opens an existing one.
@@ -66,22 +92,22 @@ func NewFromOpts(opts Options) *PouchDB {
 //
 // See: http://pouchdb.com/api.html#database_information
 func (db *PouchDB) Info() (Result, error) {
-	rw := newResultWaiter()
-	db.o.Call("info", rw.Done)
+	rw := NewResultWaiter()
+	db.Call("info", rw.Done)
 	return rw.ReadResult()
 }
 
 // Deestroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy(opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("destroy", opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("destroy", opts, rw.Done)
 	return rw.Error()
 }
 
-// convertJSONObject takes an intterface{} and runs it through json.Marshal()
+// ConvertJSONObject takes an intterface{} and runs it through json.Marshal()
 // and json.Unmarshal() so that any struct tags will be applied.
-func convertJSONObject(input, output interface{}) error {
+func ConvertJSONObject(input, output interface{}) error {
 	encoded, err := json.Marshal(input)
 	if err != nil {
 		return err
@@ -94,16 +120,16 @@ func convertJSONObject(input, output interface{}) error {
 // ignores any unexported fields in objects, and this includes practically
 // everything inside a js.Object.
 func convertJSObject(jsObj *js.Object, output interface{}) error {
-	return convertJSONObject(jsObj.Interface(), output)
+	return ConvertJSONObject(jsObj.Interface(), output)
 }
 
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
 func (db *PouchDB) Put(doc interface{}) (newrev string, err error) {
 	var convertedDoc interface{}
-	convertJSONObject(doc, &convertedDoc)
-	rw := newResultWaiter()
-	db.o.Call("put", convertedDoc, rw.Done)
+	ConvertJSONObject(doc, &convertedDoc)
+	rw := NewResultWaiter()
+	db.Call("put", convertedDoc, rw.Done)
 	return rw.ReadRev()
 }
 
@@ -116,13 +142,13 @@ func (db *PouchDB) Put(doc interface{}) (newrev string, err error) {
 // See http://pouchdb.com/api.html#fetch_document
 // and http://docs.couchdb.org/en/latest/api/document/common.html?highlight=doc#get--db-docid
 func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("get", docId, opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("get", docId, opts, rw.Done)
 	obj, err := rw.ReadResult()
 	if err != nil {
 		return err
 	}
-	return convertJSONObject(obj, doc)
+	return ConvertJSONObject(obj, doc)
 }
 
 // Attachment represents document attachments.
@@ -140,8 +166,8 @@ type Attachment struct {
 // See http://pouchdb.com/api.html#save_attachment and
 // http://godoc.org/github.com/fjl/go-couchdb#DB.PutAttachment
 func (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (newrev string, err error) {
-	rw := newResultWaiter()
-	db.o.Call("putAttachment", docid, att.Name, attachmentObject(att), att.Type, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("putAttachment", docid, att.Name, attachmentObject(att), att.Type, rw.Done)
 	return rw.ReadRev()
 }
 
@@ -190,8 +216,8 @@ func (db *PouchDB) Attachment(docid, name, rev string) (*Attachment, error) {
 	if len(rev) > 0 {
 		opts["rev"] = rev
 	}
-	rw := newResultWaiter()
-	db.o.Call("getAttachment", docid, name, opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("getAttachment", docid, name, opts, rw.Done)
 	obj, err := rw.Read()
 	if err != nil {
 		return nil, err
@@ -201,8 +227,8 @@ func (db *PouchDB) Attachment(docid, name, rev string) (*Attachment, error) {
 }
 
 func (db *PouchDB) DeleteAttachment(docid, name, rev string) (newrev string, err error) {
-	rw := newResultWaiter()
-	db.o.Call("removeAttachment", docid, name, rev, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("removeAttachment", docid, name, rev, rw.Done)
 	return rw.ReadRev()
 }
 
@@ -213,9 +239,9 @@ func (db *PouchDB) DeleteAttachment(docid, name, rev string) (newrev string, err
 // See: http://pouchdb.com/api.html#delete_document
 func (db *PouchDB) Remove(doc interface{}, opts Options) (newrev string, err error) {
 	var convertedDoc interface{}
-	convertJSONObject(doc, &convertedDoc)
-	rw := newResultWaiter()
-	db.o.Call("remove", convertedDoc, opts, rw.Done)
+	ConvertJSONObject(doc, &convertedDoc)
+	rw := NewResultWaiter()
+	db.Call("remove", convertedDoc, opts, rw.Done)
 	return rw.ReadRev()
 }
 
@@ -229,10 +255,10 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 	}
 	convertedDocs := make([]interface{}, s.Len())
 	for i := 0; i < s.Len(); i++ {
-		convertJSONObject(s.Index(i).Interface(), &(convertedDocs[i]))
+		ConvertJSONObject(s.Index(i).Interface(), &(convertedDocs[i]))
 	}
-	rw := newResultWaiter()
-	db.o.Call("bulkDocs", convertedDocs, opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("bulkDocs", convertedDocs, opts, rw.Done)
 	return rw.ReadBulkResults()
 }
 
@@ -244,8 +270,8 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 // See http://pouchdb.com/api.html#batch_fetch and
 // http://docs.couchdb.org/en/latest/api/database/bulk-api.html#db-all-docs
 func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("allDocs", opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("allDocs", opts, rw.Done)
 	obj, err := rw.Read()
 	if err != nil {
 		return err
@@ -258,8 +284,8 @@ func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
 //
 // See http://pouchdb.com/api.html#query_database
 func (db *PouchDB) Query(view string, result interface{}, opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("query", view, opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("query", view, opts, rw.Done)
 	obj, err := rw.Read()
 	if err != nil {
 		return err
@@ -270,8 +296,8 @@ func (db *PouchDB) Query(view string, result interface{}, opts Options) error {
 type MapFunc func(string)
 
 func (db *PouchDB) QueryFunc(fn MapFunc, result interface{}, opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("query", fn, opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("query", fn, opts, rw.Done)
 	obj, err := rw.Read()
 	if err != nil {
 		return err
@@ -284,7 +310,7 @@ func (db *PouchDB) QueryFunc(fn MapFunc, result interface{}, opts Options) error
 // See: http://pouchdb.com/api.html#replication
 func Replicate(source, target *PouchDB, opts Options) (Result, error) {
 	opts["live"] = false
-	rw := newResultWaiter()
+	rw := NewResultWaiter()
 	repl := globalPouch().Call("replicate", source, target, opts)
 	repl.Call("then", func(r *js.Object) {
 		rw.Done(nil, r)
@@ -319,8 +345,8 @@ func Sync(source, target *PouchDB, opts Options) ([]Result, error) {
 //
 // See: http://pouchdb.com/api.html#view_cleanup
 func (db *PouchDB) ViewCleanup() error {
-	rw := newResultWaiter()
-	db.o.Call("viewCleanup", rw.Done)
+	rw := NewResultWaiter()
+	db.Call("viewCleanup", rw.Done)
 	return rw.Error()
 }
 
@@ -328,8 +354,8 @@ func (db *PouchDB) ViewCleanup() error {
 //
 // See: http://pouchdb.com/api.html#compaction
 func (db *PouchDB) Compact(opts Options) error {
-	rw := newResultWaiter()
-	db.o.Call("compact", opts, rw.Done)
+	rw := NewResultWaiter()
+	db.Call("compact", opts, rw.Done)
 	return rw.Error()
 }
 
@@ -337,16 +363,14 @@ func (db *PouchDB) Compact(opts Options) error {
 // those that do not correspond to revisions stored in the database.
 // See: http://pouchdb.com/api.html#revisions_diff
 // func (db *PouchDB) RevsDiff(diff *js.Object, fn interface{}) {
-// 	db.o.Call("revsDiff", diff, fn)
+// 	db.Call("revsDiff", diff, fn)
 // }
 
-// Debug enables debugging for the specified module.
-// See: http://pouchdb.com/api.html#debug_mode
-func Debug(module string) {
-	globalPouch().Get("debug").Call("enable", module)
-}
 
-// DebugDisable disables debugging.
-func DebugDisable() {
-	globalPouch().Get("debug").Call("disable")
+// Call calls the underlying PouchDB object's method with the given name and
+// arguments. This method is used internally, and may also facilitate the use
+// of plugins which may add methods to PouchDB which are not implemented in
+// the GopherJS bindings.
+func (db *PouchDB) Call(name string, args ...interface{}) *js.Object {
+	return db.Call(name, args...)
 }
