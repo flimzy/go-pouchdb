@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/flimzy/go-pouchdb.svg?branch=master)](https://travis-ci.org/flimzy/go-pouchdb)
+[![Build Status](https://travis-ci.org/flimzy/go-pouchdb.svg?branch=master)](https://travis-ci.org/flimzy/go-pouchdb) [![GoDoc](https://godoc.org/github.com/flimzy/go-pouchdb?status.png)](http://godoc.org/github.com/flimzy/go-pouchdb)
 
 # go-pouchdb
 
