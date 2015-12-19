@@ -18,21 +18,22 @@ var loaded bool
 func New(db *pouchdb.PouchDB) *PouchPluginFind {
 	if ! loaded {
 		// Load the JS plugin
-		js.Global.Call("require", "/home/jonhall/go/src/github.com/flimzy/go-pouchdb/node_modules/pouchdb-find")
+		plugin := js.Global.Call("require", "/home/jonhall/go/src/github.com/flimzy/go-pouchdb/node_modules/pouchdb-find")
+		pouchdb.RegisterPlugin(plugin)
 		loaded = true
 	}
 	return &PouchPluginFind{ db }
 }
 
 type Index struct {
-	Fields []string `json:'fields'`
-	Name   string   `json:'name'`
-	Ddoc   string   `json:'ddoc'`
-	Type   string   `json:'type'`
+	Fields []string `json:"fields"`
+	Name   string   `json:"name,omitifempty"`
+	Ddoc   string   `json:"ddoc,omitifempty"`
+	Type   string   `json:"type,omitifempty"`
 }
 
 type indexWrapper struct {
-	index  Index
+	Index Index `json:"index"`
 }
 
 type findError struct {
@@ -40,20 +41,22 @@ type findError struct {
 	exists bool
 }
 
-func (e findError) IndexExists() bool {
+func (e *findError) IndexExists() bool {
 	return e.exists
 }
 
-func (db *PouchPluginFind) CreateIndex(index Index) error {
+func (db *PouchPluginFind) CreateIndex(index Index) *findError {
 	i := indexWrapper{ index }
+	var jsonIndex map[string]interface{}
+	pouchdb.ConvertJSONObject(i, &jsonIndex)
 	rw := pouchdb.NewResultWaiter()
-	db.Call("createIndex", i, rw.Done)
+	db.Call("createIndex", jsonIndex, rw.Done)
 	result, err := rw.ReadResult()
 	if err != nil {
-		return findError{ err, false }
+		return &findError{ err, false }
 	}
 	if result["result"] == "exists" {
-		return findError{
+		return &findError{
 			errors.New("Index exists"),
 			true,
 		}

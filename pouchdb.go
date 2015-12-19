@@ -50,19 +50,9 @@ func globalPouch() *js.Object {
 	return GlobalPouch
 }
 
-// Plugin loads the specified plugin. There is no support for inline plugins in the form:
-//
-//     PouchDB.plugin({
-//         methodName: myFunction
-//     })
-//
-// If you need this functionality, you will need to provide it outside of Go, such
-// as with a *.inc.js file.
-//
-// Once a plugin is loaded, you can access any new methods created by the plugin
-// with the Call() method.
-func Plugin(name string) {
-	globalPouch().Call("require", name)
+// RegisterPlugin registers a loaded plugin with the global PouchDB object
+func RegisterPlugin(plugin *js.Object) {
+	globalPouch().Call("plugin", plugin)
 }
 
 // Debug enables debugging for the specified module.
@@ -171,7 +161,7 @@ func (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (new
 	return rw.ReadRev()
 }
 
-// attachmentObject converts an io.Reader to a JavaScrpit Buffer in node, or
+// attachmentObject converts an io.Reader to a JavaScript Buffer in node, or
 // a Blob in the browser
 func attachmentObject(att *Attachment) *js.Object {
 	buf := new(bytes.Buffer)
@@ -372,5 +362,5 @@ func (db *PouchDB) Compact(opts Options) error {
 // of plugins which may add methods to PouchDB which are not implemented in
 // the GopherJS bindings.
 func (db *PouchDB) Call(name string, args ...interface{}) *js.Object {
-	return db.Call(name, args...)
+	return db.o.Call(name, args...)
 }

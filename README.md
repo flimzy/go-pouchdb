@@ -52,8 +52,8 @@ The following table shows the status of each API method.
 | query()            | (db \*PouchDB) Query(view string, result interface{}, opts Options) error                |
 | query()            | (db \*PouchDB) QueryFunc(view MapFunc, result interface{}, opts Options) error           |
 | on()               | --                                                                                       |
-| plugin()           | Plugin(name string)                                                                      |
-| --                 | (db \*PouchDB) Call(name string, interface{} ...) (\*js.Object, error)                 |
+| plugin()           | RegisterPlugin(\*js.Object)                                                              | *Primarily for internal use
+| --                 | (db \*PouchDB) Call(name string, interface{} ...) (\*js.Object, error)                   |
 
 ### TODO
 
