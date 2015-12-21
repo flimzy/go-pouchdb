@@ -5,7 +5,10 @@ package pouchdb_find
 import (
 	"encoding/json"
 	"errors"
+	"log"
+
 	"github.com/gopherjs/gopherjs/js"
+	"github.com/gopherjs/jsbuiltin"
 
 	"github.com/flimzy/go-pouchdb"
 )
@@ -17,9 +20,14 @@ type PouchPluginFind struct {
 var loaded bool
 func New(db *pouchdb.PouchDB) *PouchPluginFind {
 	if ! loaded {
-		// Load the JS plugin
-		plugin := js.Global.Call("require", "/home/jonhall/go/src/github.com/flimzy/go-pouchdb/node_modules/pouchdb-find")
-		pouchdb.RegisterPlugin(plugin)
+		fnType := jsbuiltin.TypeOf( db.GetJS("createIndex") )
+		if fnType == "undefined" {
+			// Load the JS plugin
+			plugin := js.Global.Call("require", "pouchdb-find")
+			pouchdb.Plugin(plugin)
+		} else if fnType != "function" {
+			log.Fatal("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
+		}
 		loaded = true
 	}
 	return &PouchPluginFind{ db }

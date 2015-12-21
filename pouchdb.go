@@ -45,13 +45,13 @@ func globalPouch() *js.Object {
 	}
 	GlobalPouch := js.Global.Get("PouchDB")
 	if jsbuiltin.TypeOf(GlobalPouch) == "undefined" {
-		GlobalPouch = js.Global.Call("require", "/home/jonhall/go/src/github.com/flimzy/go-pouchdb/node_modules/pouchdb")
+		GlobalPouch = js.Global.Call("require", "pouchdb")
 	}
 	return GlobalPouch
 }
 
-// RegisterPlugin registers a loaded plugin with the global PouchDB object
-func RegisterPlugin(plugin *js.Object) {
+// Plugin registers a loaded plugin with the global PouchDB object
+func Plugin(plugin *js.Object) {
 	globalPouch().Call("plugin", plugin)
 }
 
@@ -363,4 +363,9 @@ func (db *PouchDB) Compact(opts Options) error {
 // the GopherJS bindings.
 func (db *PouchDB) Call(name string, args ...interface{}) *js.Object {
 	return db.o.Call(name, args...)
+}
+
+// GetJS gets the requested key from the underlying PouchDB object
+func (db *PouchDB) GetJS(name string) *js.Object {
+	return db.o.Get(name)
 }

@@ -3,7 +3,10 @@
 package pouchdb_find_test
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/gopherjs/gopherjs/js"
 
 	"github.com/flimzy/go-pouchdb"
 	"github.com/flimzy/go-pouchdb/plugins/find"
@@ -12,6 +15,16 @@ import (
 type myDB struct {
 	*pouchdb.PouchDB
 	*pouchdb_find.PouchPluginFind
+}
+
+func init() {
+	// This is necessary because gopherjs runs the test from /tmp
+	// rather than from the current directory, which confuses nodejs
+	// as to where to search for modules
+	cwd := strings.TrimSuffix(js.Global.Get("process").Call("cwd").String(), "plugins/find")
+	pouchdb.GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
+	find := js.Global.Call("require", cwd+"/node_modules/pouchdb-find")
+	pouchdb.Plugin(find)
 }
 
 func TestFind(t *testing.T) {
