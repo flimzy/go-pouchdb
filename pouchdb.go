@@ -109,7 +109,7 @@ func ConvertJSONObject(input, output interface{}) error {
 // calls convertJSONObject. This is necessary for objects, because json.Marshal
 // ignores any unexported fields in objects, and this includes practically
 // everything inside a js.Object.
-func convertJSObject(jsObj *js.Object, output interface{}) error {
+func ConvertJSObject(jsObj *js.Object, output interface{}) error {
 	return ConvertJSONObject(jsObj.Interface(), output)
 }
 
@@ -266,7 +266,7 @@ func (db *PouchDB) AllDocs(result interface{}, opts Options) error {
 	if err != nil {
 		return err
 	}
-	return convertJSObject(obj, &result)
+	return ConvertJSObject(obj, &result)
 }
 
 // Invoke a map/reduce function, which allows you to perform more complex
@@ -280,7 +280,7 @@ func (db *PouchDB) Query(view string, result interface{}, opts Options) error {
 	if err != nil {
 		return err
 	}
-	return convertJSObject(obj, &result)
+	return ConvertJSObject(obj, &result)
 }
 
 type MapFunc func(string)
@@ -292,7 +292,7 @@ func (db *PouchDB) QueryFunc(fn MapFunc, result interface{}, opts Options) error
 	if err != nil {
 		return err
 	}
-	return convertJSObject(obj, &result)
+	return ConvertJSObject(obj, &result)
 }
 
 // Replicate will replicate data from source to target in the foreground.
