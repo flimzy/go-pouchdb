@@ -17,20 +17,16 @@ type PouchPluginFind struct {
 	*pouchdb.PouchDB
 }
 
-var loaded bool
 func New(db *pouchdb.PouchDB) *PouchPluginFind {
-	if ! loaded {
-		fnType := jsbuiltin.TypeOf( db.GetJS("createIndex") )
-		if fnType == "undefined" {
-			// Load the JS plugin
-			plugin := js.Global.Call("require", "pouchdb-find")
-			pouchdb.Plugin(plugin)
-		} else if fnType != "function" {
-			log.Fatal("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
-		}
-		loaded = true
+	fnType := jsbuiltin.TypeOf(db.GetJS("createIndex"))
+	if fnType == "undefined" {
+		// Load the JS plugin
+		plugin := js.Global.Call("require", "pouchdb-find")
+		pouchdb.Plugin(plugin)
+	} else if fnType != "function" {
+		log.Fatal("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
 	}
-	return &PouchPluginFind{ db }
+	return &PouchPluginFind{db}
 }
 
 type Index struct {
