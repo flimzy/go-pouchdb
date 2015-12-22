@@ -3,6 +3,8 @@
 package pouchdb_find_test
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -10,6 +12,8 @@ import (
 
 	"github.com/flimzy/go-pouchdb"
 	"github.com/flimzy/go-pouchdb/plugins/find"
+	"github.com/kr/pretty"
+	"github.com/pmezard/go-difflib/difflib"
 )
 
 type myDB struct {
@@ -48,15 +52,61 @@ func TestFind(t *testing.T) {
 	err = db.CreateIndex(pouchdb_find.Index{
 		Fields: []string{"name", "size"},
 	})
-	if err != nil && ! err.IndexExists() {
+	if err != nil && !err.IndexExists() {
 		t.Fatalf("Error re-creating index: %s\n", err)
 	}
-	if ! err.IndexExists() {
+	if !err.IndexExists() {
 		t.Fatalf("We were not notified that the index already existed\n")
 	}
 
-// 	idxs, err := db.GetIndexes()
-// 	fmt.Printf("X:%v", idxs)
-// 	t.Fatalf("ouch")
-// 	fmt.Printf("Yuppers\n")
+	expected := []*pouchdb_find.IndexDef{
+		&pouchdb_find.IndexDef{
+			Ddoc: "",
+			Name: "_all_docs",
+			Type: "special",
+			Def: struct {
+				Fields []map[string]string "json:\"fields\""
+			}{
+				Fields: []map[string]string{
+					map[string]string{"_id": "asc"},
+				},
+			},
+		},
+		&pouchdb_find.IndexDef{
+			Ddoc: "_design/idx-1c1850c82e1b5105c94a267ec61322ce",
+			Name: "idx-1c1850c82e1b5105c94a267ec61322ce",
+			Type: "json",
+			Def: struct {
+				Fields []map[string]string "json:\"fields\""
+			}{
+				Fields: []map[string]string{
+					map[string]string{"name": "asc"},
+					map[string]string{"size": "asc"},
+				},
+			},
+		},
+	}
+
+	idxs, err2 := db.GetIndexes()
+	if err2 != nil {
+		t.Fatalf("Error running GetIndexes: %s", err)
+	}
+	if !reflect.DeepEqual(idxs, expected) {
+		DumpDiff(expected, idxs)
+		t.Fatal()
+	}
+}
+
+func DumpDiff(expectedObj, actualObj interface{}) {
+	expected := pretty.Sprintf("%# v\n", expectedObj)
+	actual := pretty.Sprintf("%# v\n", actualObj)
+	diff := difflib.UnifiedDiff{
+		A:        difflib.SplitLines(expected),
+		B:        difflib.SplitLines(actual),
+		FromFile: "expected",
+		ToFile:   "actual",
+		Context:  3,
+	}
+	text, _ := difflib.GetUnifiedDiffString(diff)
+	fmt.Print(text)
 }

@@ -356,7 +356,6 @@ func (db *PouchDB) Compact(opts Options) error {
 // 	db.Call("revsDiff", diff, fn)
 // }
 
-
 // Call calls the underlying PouchDB object's method with the given name and
 // arguments. This method is used internally, and may also facilitate the use
 // of plugins which may add methods to PouchDB which are not implemented in

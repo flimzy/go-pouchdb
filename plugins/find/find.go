@@ -50,14 +50,14 @@ func (e *findError) IndexExists() bool {
 }
 
 func (db *PouchPluginFind) CreateIndex(index Index) *findError {
-	i := indexWrapper{ index }
+	i := indexWrapper{index}
 	var jsonIndex map[string]interface{}
 	pouchdb.ConvertJSONObject(i, &jsonIndex)
 	rw := pouchdb.NewResultWaiter()
 	db.Call("createIndex", jsonIndex, rw.Done)
 	result, err := rw.ReadResult()
 	if err != nil {
-		return &findError{ err, false }
+		return &findError{err, false}
 	}
 	if result["result"] == "exists" {
 		return &findError{
@@ -69,19 +69,19 @@ func (db *PouchPluginFind) CreateIndex(index Index) *findError {
 }
 
 type IndexDef struct {
-	Ddoc string `json:'ddoc'`
-	Name string `json:'name'`
-	Type string `json:'type'`
+	Ddoc string `json:"ddoc"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 	Def  struct {
-		Fields []map[string]string `json:'fields'`
-	} `json:'def'`
+		Fields []map[string]string `json:"fields"`
+	} `json:"def"`
 }
 
 type indexDefsWrapper struct {
-	indexes []IndexDef
+	Indexes []*IndexDef `json:"indexes"`
 }
 
-func (db *PouchPluginFind) GetIndexes() ([]IndexDef, error) {
+func (db *PouchPluginFind) GetIndexes() ([]*IndexDef, error) {
 	rw := pouchdb.NewResultWaiter()
 	db.Call("getIndexes", rw.Done)
 	result, err := rw.Read()
@@ -89,16 +89,15 @@ func (db *PouchPluginFind) GetIndexes() ([]IndexDef, error) {
 		return nil, err
 	}
 	var i indexDefsWrapper
-	err = pouchdb.ConvertJSONObject(result,&i)
+	err = pouchdb.ConvertJSObject(result, &i)
 	if err != nil {
 		return nil, err
 	}
-	return i.indexes, nil
+	return i.Indexes, nil
 }
 
-
 func (db *PouchPluginFind) DeleteIndex(index IndexDef) error {
-	i := indexDefsWrapper{ []IndexDef{ index } }
+	i := indexDefsWrapper{[]*IndexDef{&index}}
 	rw := pouchdb.NewResultWaiter()
 	db.Call("deleteIndex", i, rw.Done)
 	_, err := rw.Read()
