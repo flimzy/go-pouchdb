@@ -96,11 +96,15 @@ func (db *PouchPluginFind) GetIndexes() ([]*IndexDef, error) {
 	return i.Indexes, nil
 }
 
-func (db *PouchPluginFind) DeleteIndex(index IndexDef) error {
-	i := indexDefsWrapper{[]*IndexDef{&index}}
+func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
+	var i map[string]interface{}
+	err := pouchdb.ConvertJSONObject(index, &i)
+	if err != nil {
+		return err
+	}
 	rw := pouchdb.NewResultWaiter()
 	db.Call("deleteIndex", i, rw.Done)
-	_, err := rw.Read()
+	_, err = rw.Read()
 	return err
 }
 

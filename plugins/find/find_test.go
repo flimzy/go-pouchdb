@@ -95,6 +95,35 @@ func TestFind(t *testing.T) {
 		DumpDiff(expected, idxs)
 		t.Fatal()
 	}
+
+	err2 = db.DeleteIndex(idxs[1])
+	if err2 != nil {
+		t.Fatalf("Error running DeleteIndex: %s", err2)
+	}
+
+	expected = []*pouchdb_find.IndexDef{
+		&pouchdb_find.IndexDef{
+			Ddoc: "",
+			Name: "_all_docs",
+			Type: "special",
+			Def: struct {
+				Fields []map[string]string "json:\"fields\""
+			}{
+				Fields: []map[string]string{
+					map[string]string{"_id": "asc"},
+				},
+			},
+		},
+	}
+	idxs, err2 = db.GetIndexes()
+	if err2 != nil {
+		t.Fatalf("Error running GetIndexes: %s", err)
+	}
+	if !reflect.DeepEqual(idxs, expected) {
+		DumpDiff(expected, idxs)
+		t.Fatal()
+	}
+
 }
 
 func DumpDiff(expectedObj, actualObj interface{}) {
