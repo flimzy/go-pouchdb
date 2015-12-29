@@ -18,16 +18,26 @@ type TestDoc struct {
 	Value      string `json:"foo"`
 }
 
+var memdown *js.Object
+
 func init() {
 	// This is necessary because gopherjs runs the test from /tmp
 	// rather than from the current directory, which confuses nodejs
 	// as to where to search for modules
 	cwd := js.Global.Get("process").Call("cwd").String()
 	GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
+	memdown = js.Global.Call("require", cwd+"/node_modules/memdown")
+}
+
+func newPouch(dbname string) *PouchDB {
+	return NewFromOpts(Options{
+		"name": dbname,
+		"db":   memdown,
+	})
 }
 
 func TestNew(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	info, err := db.Info()
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
@@ -53,7 +63,7 @@ func TestNewFromOpts(t *testing.T) {
 }
 
 func TestDestory(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	err := db.Destroy(Options{})
 	if err != nil {
 		t.Fatalf("Destroy() resulted in an error: %s", err)
@@ -61,7 +71,7 @@ func TestDestory(t *testing.T) {
 }
 
 func TestPutGet(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	doc := map[string]interface{}{
 		"_id": "foobar",
 		"foo": "bar",
@@ -107,7 +117,7 @@ type TestDocCollection struct {
 }
 
 func TestBulkDocs(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	docs := []TestDoc{
 		TestDoc{
 			DocId: "foo",
@@ -151,7 +161,7 @@ func TestBulkDocs(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	doc := TestDoc{
 		DocId: "foo",
 	}
@@ -176,7 +186,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestViewCleanup(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	err := db.ViewCleanup()
 	if err != nil {
 		t.Fatalf("Error cleaning up views: %s", err)
@@ -185,7 +195,7 @@ func TestViewCleanup(t *testing.T) {
 }
 
 func TestCompact(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	err := db.Compact(Options{})
 	if err != nil {
 		t.Fatalf("Error compacting database: %s", err)
@@ -194,7 +204,7 @@ func TestCompact(t *testing.T) {
 }
 
 func TestAttachments(t *testing.T) {
-	db := New("testdb")
+	db := newPouch("testdb")
 	body1 := "A légpárnás hajóm tele van angolnákkal"
 	att1 := &Attachment{
 		Name: "foo.txt",
@@ -226,9 +236,9 @@ func TestAttachments(t *testing.T) {
 }
 
 func TestReplicate(t *testing.T) {
-	New("db1").Destroy(Options{})
-	New("db2").Destroy(Options{})
-	db1 := New("db1")
+	newPouch("db1").Destroy(Options{})
+	newPouch("db2").Destroy(Options{})
+	db1 := newPouch("db1")
 	doc1 := TestDoc{
 		DocId: "oink",
 		Value: "foo",
@@ -241,7 +251,7 @@ func TestReplicate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error re-reading doc1: %s", err)
 	}
-	db2 := New("db2")
+	db2 := newPouch("db2")
 	results, err := Replicate(db1, db2, Options{})
 	if err != nil {
 		t.Fatalf("Error replicating: %s", err)
