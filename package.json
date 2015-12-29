@@ -9,6 +9,7 @@
     },
     "devDependencies": {
         "pouchdb": ">=4.0.2",
-        "pouchdb-find": ">=0.8.0"
+        "pouchdb-find": ">=0.8.0",
+        "memdown": ">=1.1.0"
     }
 }

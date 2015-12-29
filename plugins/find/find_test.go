@@ -21,6 +21,8 @@ type myDB struct {
 	*pouchdb_find.PouchPluginFind
 }
 
+var memdown *js.Object
+
 func init() {
 	// This is necessary because gopherjs runs the test from /tmp
 	// rather than from the current directory, which confuses nodejs
@@ -28,13 +30,21 @@ func init() {
 	cwd := strings.TrimSuffix(js.Global.Get("process").Call("cwd").String(), "plugins/find")
 	pouchdb.GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
 	find := js.Global.Call("require", cwd+"/node_modules/pouchdb-find")
+
 	pouchdb.Plugin(find)
+	memdown = js.Global.Call("require", cwd+"/node_modules/memdown")
 }
 
 func TestFind(t *testing.T) {
-	mainDB := pouchdb.New("finddb")
+	mainDB := pouchdb.NewFromOpts(pouchdb.Options{
+		"name": "finddb",
+		"db":   memdown,
+	})
 	mainDB.Destroy(pouchdb.Options{}) // to ensure a clean slate
-	mainDB = pouchdb.New("finddb")
+	mainDB = pouchdb.NewFromOpts(pouchdb.Options{
+		"name": "finddb",
+		"db":   memdown,
+	})
 
 	db := myDB{
 		mainDB,
