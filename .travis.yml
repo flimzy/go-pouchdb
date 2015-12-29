@@ -11,7 +11,9 @@ before_install:
 install:
     - go get -u github.com/gopherjs/gopherjs
     - go get -u -d -tags=js github.com/gopherjs/jsbuiltin
+    - go get github.com/kr/pretty github.com/pmezard/go-difflib/difflib
 
 script:
     - diff -u <(echo -n) <(gofmt -d ./)
     - gopherjs test
+    - gopherjs test github.com/flimzy/go-pouchdb/plugins/find

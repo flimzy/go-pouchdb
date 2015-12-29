@@ -8,6 +8,7 @@
         "url": "https://github.com/flimzy/go-pouchdb"
     },
     "devDependencies": {
-        "pouchdb": ">=4.0.2"
+        "pouchdb": ">=4.0.2",
+        "pouchdb-find": ">=0.8.0"
     }
 }

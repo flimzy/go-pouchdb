@@ -15,7 +15,7 @@ type resultWaiter struct {
 	resultChan chan *resultWaiterTuple
 }
 
-func newResultWaiter() *resultWaiter {
+func NewResultWaiter() *resultWaiter {
 	return &resultWaiter{
 		make(chan *resultWaiterTuple),
 	}
