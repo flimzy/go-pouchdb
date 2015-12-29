@@ -16,6 +16,8 @@ type PouchPluginFind struct {
 	*pouchdb.PouchDB
 }
 
+// New loads the pouchdb-find plugin (if not already loaded) and returns
+// a plugin instance.
 func New(db *pouchdb.PouchDB) *PouchPluginFind {
 	fnType := jsbuiltin.TypeOf(db.GetJS("createIndex"))
 	if fnType == "undefined" {
@@ -28,6 +30,7 @@ func New(db *pouchdb.PouchDB) *PouchPluginFind {
 	return &PouchPluginFind{db}
 }
 
+// Index defines an index to be created
 type Index struct {
 	Fields []string `json:"fields"`
 	Name   string   `json:"name,omitifempty"`
@@ -44,10 +47,15 @@ type findError struct {
 	exists bool
 }
 
+// IndexExists returns true if the error indicates that the index to be created
+// already exists.
 func (e *findError) IndexExists() bool {
 	return e.exists
 }
 
+// Creates the requested index.
+//
+// See https://github.com/nolanlawson/pouchdb-find#dbcreateindexindex--callback
 func (db *PouchPluginFind) CreateIndex(index Index) *findError {
 	i := indexWrapper{index}
 	var jsonIndex map[string]interface{}
@@ -67,6 +75,7 @@ func (db *PouchPluginFind) CreateIndex(index Index) *findError {
 	return nil
 }
 
+// IndexDef describes an index as fetched from the database
 type IndexDef struct {
 	Ddoc string `json:"ddoc"`
 	Name string `json:"name"`
@@ -80,6 +89,9 @@ type indexDefsWrapper struct {
 	Indexes []*IndexDef `json:"indexes"`
 }
 
+// GetIndex returns a list of existing indexes.
+//
+// See https://github.com/nolanlawson/pouchdb-find#dbgetindexescallback
 func (db *PouchPluginFind) GetIndexes() ([]*IndexDef, error) {
 	rw := pouchdb.NewResultWaiter()
 	db.Call("getIndexes", rw.Done)
@@ -95,6 +107,9 @@ func (db *PouchPluginFind) GetIndexes() ([]*IndexDef, error) {
 	return i.Indexes, nil
 }
 
+// DeleteIndex deletes the requested index.
+//
+// See https://github.com/nolanlawson/pouchdb-find#dbdeleteindexindex--callback
 func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
 	var i map[string]interface{}
 	err := pouchdb.ConvertJSONObject(index, &i)
@@ -107,6 +122,9 @@ func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
 	return err
 }
 
+// Find performs the requested search query
+//
+// See https://github.com/nolanlawson/pouchdb-find#dbfindrequest--callback
 func (db *PouchPluginFind) Find(request, doc interface{}) error {
 	rw := pouchdb.NewResultWaiter()
 	db.Call("find", request, rw.Done)
