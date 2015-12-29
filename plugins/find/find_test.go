@@ -41,21 +41,21 @@ func TestFind(t *testing.T) {
 		pouchdb_find.New(mainDB),
 	}
 
-	err := db.CreateIndex(pouchdb_find.Index{
+	ferr := db.CreateIndex(pouchdb_find.Index{
 		Fields: []string{"name", "size"},
 	})
-	if err != nil {
-		t.Fatalf("Error from CreateIndex: %s\n", err)
+	if ferr != nil {
+		t.Fatalf("Error from CreateIndex: %s\n", ferr)
 	}
 
 	// Create the same index again; we should be notified it exists
-	err = db.CreateIndex(pouchdb_find.Index{
+	ferr = db.CreateIndex(pouchdb_find.Index{
 		Fields: []string{"name", "size"},
 	})
-	if err != nil && !err.IndexExists() {
-		t.Fatalf("Error re-creating index: %s\n", err)
+	if ferr != nil && !ferr.IndexExists() {
+		t.Fatalf("Error re-creating index: %s\n", ferr)
 	}
-	if !err.IndexExists() {
+	if !ferr.IndexExists() {
 		t.Fatalf("We were not notified that the index already existed\n")
 	}
 
@@ -87,8 +87,8 @@ func TestFind(t *testing.T) {
 		},
 	}
 
-	idxs, err2 := db.GetIndexes()
-	if err2 != nil {
+	idxs, err := db.GetIndexes()
+	if err != nil {
 		t.Fatalf("Error running GetIndexes: %s", err)
 	}
 	if !reflect.DeepEqual(idxs, expected) {
@@ -96,9 +96,57 @@ func TestFind(t *testing.T) {
 		t.Fatal()
 	}
 
-	err2 = db.DeleteIndex(idxs[1])
-	if err2 != nil {
-		t.Fatalf("Error running DeleteIndex: %s", err2)
+	// Retrieval
+	doc := map[string]interface{}{
+		"_id":  "12345",
+		"name": "Bob",
+		"size": 48,
+	}
+	_, err = db.Put(doc)
+	if err != nil {
+		t.Fatalf("Error calling Put(): %s", err)
+	}
+	doc = map[string]interface{}{
+		"_id":  "23456",
+		"name": "Alice",
+	}
+	_, err = db.Put(doc)
+	if err != nil {
+		t.Fatalf("Error calling Put(): %s", err)
+	}
+
+	var resultDoc map[string]interface{}
+	req := map[string]interface{}{
+		"selector": map[string]string{
+			"name": "Bob",
+		},
+		"fields": []string{
+			"_id",
+			"name",
+			"size",
+		},
+	}
+	expectedResult := map[string]interface{}{
+		"docs": []interface{}{
+			map[string]interface{}{
+				"_id":  "12345",
+				"name": "Bob",
+				"size": float64(48),
+			},
+		},
+	}
+	err = db.Find(req, &resultDoc)
+	if err != nil {
+		t.Fatalf("Error executing Find(): %s", err)
+	}
+	if !reflect.DeepEqual(expectedResult, resultDoc) {
+		DumpDiff(expectedResult, resultDoc)
+		t.Fatal()
+	}
+
+	err = db.DeleteIndex(idxs[1])
+	if err != nil {
+		t.Fatalf("Error running DeleteIndex: %s", err)
 	}
 
 	expected = []*pouchdb_find.IndexDef{
@@ -115,15 +163,14 @@ func TestFind(t *testing.T) {
 			},
 		},
 	}
-	idxs, err2 = db.GetIndexes()
-	if err2 != nil {
+	idxs, err = db.GetIndexes()
+	if err != nil {
 		t.Fatalf("Error running GetIndexes: %s", err)
 	}
 	if !reflect.DeepEqual(idxs, expected) {
 		DumpDiff(expected, idxs)
 		t.Fatal()
 	}
-
 }
 
 func DumpDiff(expectedObj, actualObj interface{}) {

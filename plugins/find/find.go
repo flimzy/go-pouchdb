@@ -3,7 +3,6 @@
 package pouchdb_find
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 
@@ -108,18 +107,12 @@ func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
 	return err
 }
 
-func (db *PouchPluginFind) JSONFind(request string, doc interface{}) error {
-	var jsonRequest interface{}
-	err := json.Unmarshal([]byte(request), &jsonRequest)
-	if err != nil {
-		return err
-	}
+func (db *PouchPluginFind) Find(request, doc interface{}) error {
 	rw := pouchdb.NewResultWaiter()
-	db.Call("find", jsonRequest, rw.Done)
+	db.Call("find", request, rw.Done)
 	result, err := rw.Read()
 	if err != nil {
 		return err
 	}
-	err = pouchdb.ConvertJSONObject(result, doc)
-	return err
+	return pouchdb.ConvertJSObject(result, doc)
 }
