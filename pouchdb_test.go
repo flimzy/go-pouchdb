@@ -21,12 +21,8 @@ type TestDoc struct {
 var memdown *js.Object
 
 func init() {
-	// This is necessary because gopherjs runs the test from /tmp
-	// rather than from the current directory, which confuses nodejs
-	// as to where to search for modules
-	cwd := js.Global.Get("process").Call("cwd").String()
-	GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
-	memdown = js.Global.Call("require", cwd+"/node_modules/memdown")
+	GlobalPouch = js.Global.Call("require", "pouchdb")
+	memdown = js.Global.Call("require", "memdown")
 }
 
 func newPouch(dbname string) *PouchDB {

@@ -5,7 +5,6 @@ package pouchdb_find_test
 import (
 	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/gopherjs/gopherjs/js"
@@ -24,15 +23,11 @@ type myDB struct {
 var memdown *js.Object
 
 func init() {
-	// This is necessary because gopherjs runs the test from /tmp
-	// rather than from the current directory, which confuses nodejs
-	// as to where to search for modules
-	cwd := strings.TrimSuffix(js.Global.Get("process").Call("cwd").String(), "plugins/find")
-	pouchdb.GlobalPouch = js.Global.Call("require", cwd+"/node_modules/pouchdb")
-	find := js.Global.Call("require", cwd+"/node_modules/pouchdb-find")
+	pouchdb.GlobalPouch = js.Global.Call("require", "pouchdb")
+	find := js.Global.Call("require", "pouchdb-find")
 
 	pouchdb.Plugin(find)
-	memdown = js.Global.Call("require", cwd+"/node_modules/memdown")
+	memdown = js.Global.Call("require", "memdown")
 }
 
 func TestFind(t *testing.T) {
