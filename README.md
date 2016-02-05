@@ -8,6 +8,49 @@
 
 This package requires PouchDB 4.0.2 or newer. This is due to a bug in earlier versions of PouchDB, which crashed when destroy() was passed with options. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323) for details.  While I would normally try to support older versions simultaneously, I suspect anyone using this package is likely to be using the latest version of PouchDB, so I expect this not to be an issue.  If you have a requirement to use this with an older version of PouchDB, and this bug is a problem for you, please open an issue, and I will try to find a work-around.
 
+## Installation
+
+Installation is a two-step process, because there is the Go code, and the node.js code:
+
+### Install Go code
+
+Usually the simplest way to do this is simply to run `gopherjs get` in your Go project's directory, to fetch all of the build requirements simultaneously.  If you want to explicitly install **go-pouchdb**, you can do so with the following command:
+
+    gopherjs get github.com/flimzy/go-pouchdb
+
+### Install Node.js code
+
+For larger projects with multiple Node.js requirements, you will likely want to maintain a **package.json** file, as you would for most Node or JavaScript packages.  A minimal **package.json** file for use with **go-pouchdb** could look like this:
+
+    {
+        "name": "app",
+        "dependencies": {
+            "pouchdb": ">=4.0.2"
+        }
+    }
+
+With this in place, you can run `npm install` from your package directory to install **pouchdb** and its requirements, with npm.  To directly and explicitly install just pouchdb, you can also use the command `npm install pouchdb`.
+
+### Deployment
+
+When deploying your code for use in a browser, you have a couple of options.  My recommended method is simply to use [Browserify](http://browserify.org/) to bundle your GopherJS app with the nodejs requirements into a single, shippable .js file.  If this does not work for your purposes, the next simplest option is simply to load PouchDB in the browser before loading your GopherJS app.  **go-pouchdb** will look for a global **pouchdb** object when it starts.  If it cannot find one, and it cannot load pouchdb, it will generate a runtime error.
+
+### Alternatives
+
+If you have different requirements, and cannot load pouchdb globally, there is one alternative.  You can load the PouchDB module into a custom variable, and tell **go-pouchdb** by setting the `pouchdb.GlobalPouch` variable in your `init()` function:
+
+    package main
+    
+    import (
+        "github.com/flimzy/go-pouchdb"
+        "github.com/gopherjs/gopherjs/js"
+    )
+    
+    func init() {
+        pouchdb.GlobalPouch = js.Global.Get("someOtherPouchDBObject")
+    }
+
+
 ## General philosophy
 
 There are a number of design decisions that must be made when writing wrappers and/or bindings between langauges.  One common approach is to write the smallest, most minimal wrapper necessary around. The [JavaScript bindings in GopherJS](https://github.com/gopherjs/gopherjs/blob/master/js/js.go) take this approach, and I believe that is an appropriate decision in that case, where the goal is to provide access to the underlying JavaScript primatives, with the least amount of abstraction so that users of the bindings can accomplish anything they need.
