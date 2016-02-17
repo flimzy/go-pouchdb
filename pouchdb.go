@@ -157,7 +157,7 @@ type Attachment struct {
 // http://godoc.org/github.com/fjl/go-couchdb#DB.PutAttachment
 func (db *PouchDB) PutAttachment(docid string, att *Attachment, rev string) (newrev string, err error) {
 	rw := NewResultWaiter()
-	db.Call("putAttachment", docid, att.Name, attachmentObject(att), att.Type, rw.Done)
+	db.Call("putAttachment", docid, att.Name, rev, attachmentObject(att), att.Type, rw.Done)
 	return rw.ReadRev()
 }
 
@@ -171,7 +171,7 @@ func attachmentObject(att *Attachment) *js.Object {
 		return buffer.New(buf.String())
 	}
 	// We must be in the browser, so return a Blob instead
-	return js.Global.Get("Blob").New([]string{buf.String()}, att.Type)
+	return js.Global.Get("Blob").New([]string{buf.String()}, map[string]string{"type": att.Type})
 }
 
 func attachmentFromPouch(name string, obj *js.Object) *Attachment {
