@@ -171,7 +171,7 @@ func attachmentObject(att *Attachment) *js.Object {
 		return buffer.New(buf.String())
 	}
 	// We must be in the browser, so return a Blob instead
-	return js.Global.Get("Blob").New([]string{buf.String()}, map[string]string{"type": att.Type})
+	return js.Global.Get("Blob").New([]interface{}{buf.Bytes()}, map[string]string{"type": att.Type})
 }
 
 func attachmentFromPouch(name string, obj *js.Object) *Attachment {
@@ -197,7 +197,7 @@ func attachmentFromPouch(name string, obj *js.Object) *Attachment {
 //
 // Note that PouchDB's getDocument() does not fetch meta data (except for the
 // MIME type in the browser only), so the MD5 sum and (in node) the content
-// type files will be empty.
+// type fields will be empty.
 //
 // See http://pouchdb.com/api.html#get_attachment and
 // http://godoc.org/github.com/fjl/go-couchdb#Attachment
