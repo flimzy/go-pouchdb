@@ -171,7 +171,7 @@ func attachmentObject(att *Attachment) *js.Object {
 		return buffer.New(buf.String())
 	}
 	// We must be in the browser, so return a Blob instead
-	return js.Global.Get("Blob").New([]string{buf.String()}, map[string]string{"type": att.Type})
+	return js.Global.Get("Blob").New([]interface{}{buf.Bytes()}, map[string]string{"type": att.Type})
 }
 
 func attachmentFromPouch(name string, obj *js.Object) *Attachment {
