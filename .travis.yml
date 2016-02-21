@@ -10,7 +10,7 @@ before_install:
 
 install:
     - go get -u github.com/gopherjs/gopherjs
-    - go get -u -d -tags=js github.com/gopherjs/jsbuiltin
+    - go get -u -d -tags=js github.com/gopherjs/jsbuiltin github.com/flimzy/jsblob
     - go get github.com/kr/pretty github.com/pmezard/go-difflib/difflib
 
 script:
