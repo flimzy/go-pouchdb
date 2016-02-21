@@ -47,10 +47,14 @@ type findError struct {
 	exists bool
 }
 
-// IndexExists returns true if the error indicates that the index to be created
+// IsIndexExists returns true if the error indicates that the index to be created
 // already exists.
-func (e *findError) IndexExists() bool {
-	return e.exists
+func IsIndexExists(err error) bool {
+	switch e := err.(type) {
+	case *findError:
+		return e.exists
+	}
+	return false
 }
 
 // Creates the requested index.
