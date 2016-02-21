@@ -1,6 +1,6 @@
 // +build js
 
-package pouchdb_find_test
+package find_test
 
 import (
 	"fmt"

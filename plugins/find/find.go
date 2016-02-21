@@ -1,6 +1,6 @@
 // +build js
 
-package pouchdb_find
+package find
 
 import (
 	"errors"
