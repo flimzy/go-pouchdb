@@ -1,6 +1,6 @@
 // +build js
 
-package pouchdb_find_test
+package find_test
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 
 type myDB struct {
 	*pouchdb.PouchDB
-	*pouchdb_find.PouchPluginFind
+	*find.PouchPluginFind
 }
 
 var memdown *js.Object
@@ -43,10 +43,10 @@ func TestFind(t *testing.T) {
 
 	db := myDB{
 		mainDB,
-		pouchdb_find.New(mainDB),
+		find.New(mainDB),
 	}
 
-	ferr := db.CreateIndex(pouchdb_find.Index{
+	ferr := db.CreateIndex(find.Index{
 		Fields: []string{"name", "size"},
 	})
 	if ferr != nil {
@@ -54,18 +54,18 @@ func TestFind(t *testing.T) {
 	}
 
 	// Create the same index again; we should be notified it exists
-	ferr = db.CreateIndex(pouchdb_find.Index{
+	ferr = db.CreateIndex(find.Index{
 		Fields: []string{"name", "size"},
 	})
-	if ferr != nil && !ferr.IndexExists() {
+	if ferr != nil && !find.IsIndexExists(ferr) {
 		t.Fatalf("Error re-creating index: %s\n", ferr)
 	}
-	if !ferr.IndexExists() {
+	if !find.IsIndexExists(ferr) {
 		t.Fatalf("We were not notified that the index already existed\n")
 	}
 
-	expected := []*pouchdb_find.IndexDef{
-		&pouchdb_find.IndexDef{
+	expected := []*find.IndexDef{
+		&find.IndexDef{
 			Ddoc: "",
 			Name: "_all_docs",
 			Type: "special",
@@ -77,7 +77,7 @@ func TestFind(t *testing.T) {
 				},
 			},
 		},
-		&pouchdb_find.IndexDef{
+		&find.IndexDef{
 			Ddoc: "_design/idx-1c1850c82e1b5105c94a267ec61322ce",
 			Name: "idx-1c1850c82e1b5105c94a267ec61322ce",
 			Type: "json",
@@ -154,8 +154,8 @@ func TestFind(t *testing.T) {
 		t.Fatalf("Error running DeleteIndex: %s", err)
 	}
 
-	expected = []*pouchdb_find.IndexDef{
-		&pouchdb_find.IndexDef{
+	expected = []*find.IndexDef{
+		&find.IndexDef{
 			Ddoc: "",
 			Name: "_all_docs",
 			Type: "special",
