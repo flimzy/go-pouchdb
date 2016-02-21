@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/flimzy/jsblob"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
 )
@@ -182,12 +183,13 @@ func attachmentFromPouch(name string, obj *js.Object) *Attachment {
 	if jsbuiltin.TypeOf(obj.Get("write")) == "function" {
 		// This looks like a Buffer object; we're in node
 		body = obj.Call("toString", "utf-8").String()
+		att.Body = strings.NewReader(body) // FIXME: bytes, not string
 	} else {
 		// We're in the browser
-		body = obj.String()
 		att.Type = obj.Get("type").String()
+		blob := jsblob.Blob{*obj}
+		att.Body = bytes.NewReader(blob.Bytes())
 	}
-	att.Body = strings.NewReader(body)
 	return att
 }
 
