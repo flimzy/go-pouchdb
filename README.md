@@ -6,7 +6,7 @@
 
 ## Requirements
 
-This package requires PouchDB 4.0.2 or newer. This is due to a bug in earlier versions of PouchDB, which crashed when destroy() was passed with options. See [issue #4323](https://github.com/pouchdb/pouchdb/issues/4323) for details.  While I would normally try to support older versions simultaneously, I suspect anyone using this package is likely to be using the latest version of PouchDB, so I expect this not to be an issue.  If you have a requirement to use this with an older version of PouchDB, and this bug is a problem for you, please open an issue, and I will try to find a work-around.
+This package requires PouchDB 4.0.2 or newer.
 
 ## Installation
 
@@ -89,8 +89,8 @@ The following table shows the status of each API method.
 | replicate.to()     | n/a                                                                                      | Use Replicate()
 | replicate.from()   | n/a                                                                                      | Use Replicate()
 | sync()             | Sync(source, target *PouchDB, opts Options) ([]Results, error)                           |
-| putAttachment()    | (db \*PouchDB) PutAttachment(docid string, att \*Attachment, rev string) (string, error) | Only tested in Node
-| getAttachment()    | (db \*PouchDB) Attachment(docid, name, rev string) (\*Attachment, error)                 | Only tested in Node
+| putAttachment()    | (db \*PouchDB) PutAttachment(docid string, att \*Attachment, rev string) (string, error) |
+| getAttachment()    | (db \*PouchDB) Attachment(docid, name, rev string) (\*Attachment, error)                 |
 | removeAttachment() | (db \*PouchDB) DeleteAttachment(docid, name, rev string) (string, error)                 |
 | query()            | (db \*PouchDB) Query(view string, result interface{}, opts Options) error                |
 | query()            | (db \*PouchDB) QueryFunc(view MapFunc, result interface{}, opts Options) error           |
