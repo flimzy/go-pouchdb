@@ -4,7 +4,6 @@ package find
 
 import (
 	"errors"
-	"log"
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/jsbuiltin"
@@ -25,7 +24,7 @@ func New(db *pouchdb.PouchDB) *PouchPluginFind {
 		plugin := js.Global.Call("require", "pouchdb-find")
 		pouchdb.Plugin(plugin)
 	} else if fnType != "function" {
-		log.Fatal("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
+		panic("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
 	}
 	return &PouchPluginFind{db}
 }

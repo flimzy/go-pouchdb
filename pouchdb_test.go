@@ -38,8 +38,8 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
 	}
-	if info["db_name"] != "testdb" {
-		t.Fatalf("Info() returned unexpected db_name '%s'", info["db_name"])
+	if info.DBName != "testdb" {
+		t.Fatalf("Info() returned unexpected db_name '%s'", info.DBName)
 	}
 	db.Destroy(Options{})
 }
@@ -52,8 +52,8 @@ func TestNewFromOpts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
 	}
-	if info["db_name"] != "testdb" {
-		t.Fatalf("Info() returned unexpected db_name '%s'", info["db_name"])
+	if info.DBName != "testdb" {
+		t.Fatalf("Info() returned unexpected db_name '%s'", info.DBName)
 	}
 	db.Destroy(Options{})
 }
