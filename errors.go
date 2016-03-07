@@ -20,12 +20,49 @@ func (e *PouchError) Error() string {
 	return e.message
 }
 
+// ErrorStatus returns the status of a PouchError, or 0 for other errors
+func ErrorStatus(err error) int {
+	switch pe := err.(type) {
+	case *PouchError:
+		return pe.status
+	}
+	return 0
+}
+
+// ErrorMessage returns the message portion of a PouchError, or "" for other errors
+func ErrorMessage(err error) string {
+	switch pe := err.(type) {
+	case *PouchError:
+		return pe.message
+	}
+	return ""
+}
+
+// ErrorName returns the name portion of a PouchError, or "" for other errors
+func ErrorName(err error) string {
+	switch pe := err.(type) {
+	case *PouchError:
+		return pe.name
+	}
+	return ""
+}
+
 // IsNotExist returns true if the passed error represents a PouchError with
 // a status of 404 (not found)
 func IsNotExist(err error) bool {
 	switch pe := err.(type) {
 	case *PouchError:
 		return pe.status == 404
+	}
+	return false
+}
+
+// IsConflict returns true if the passed error is a PouchError with a status
+// of 409 (conflict)
+func IsConflict(err error) bool {
+	switch pe := err.(type) {
+	case *PouchError:
+		return pe.status == 409
 	}
 	return false
 }

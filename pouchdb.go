@@ -33,6 +33,12 @@ type Options map[string]interface{}
 
 type Result map[string]interface{}
 
+type DBInfo struct {
+	DBName    string `json:"db_name"`
+	DocCount  uint   `json:"doc_count"`
+	UpdateSeq uint64 `json:"update_seq"`
+}
+
 // GlobalPouch is the global pouchdb object. The package will look for it in
 // the global object (js.Global), or try to require it if it is not found. If
 // this does not work for you, you ought to set it explicitly yourself:
@@ -82,10 +88,16 @@ func NewFromOpts(opts Options) *PouchDB {
 // Info fetches information about a database.
 //
 // See: http://pouchdb.com/api.html#database_information
-func (db *PouchDB) Info() (Result, error) {
+func (db *PouchDB) Info() (DBInfo, error) {
 	rw := NewResultWaiter()
 	db.Call("info", rw.Done)
-	return rw.ReadResult()
+	result, err := rw.ReadResult()
+	if err != nil {
+		return DBInfo{}, err
+	}
+	var dbinfo DBInfo
+	err = ConvertJSONObject(result, &dbinfo)
+	return dbinfo, err
 }
 
 // Deestroy will delete the database.
@@ -257,7 +269,7 @@ func (db *PouchDB) BulkDocs(docs interface{}, opts Options) ([]Result, error) {
 // AllDocs will fetch multiple documents.
 // The output of the query is unmarshalled into the given result. The format
 // of the result depends on the options. Please refer to the CouchDB HTTP API
-//  documentation for all the possible options that can be set
+// documentation for all the possible options that can be set.
 //
 // See http://pouchdb.com/api.html#batch_fetch and
 // http://docs.couchdb.org/en/latest/api/database/bulk-api.html#db-all-docs
