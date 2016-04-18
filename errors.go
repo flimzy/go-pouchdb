@@ -9,22 +9,23 @@ import (
 // PouchError records an error returned by the PouchDB library
 type PouchError struct {
 	e       *js.Error
-	status  int
-	message string
-	name    string
-	isError bool
+	Status  int    `js:"status"`
+	Message string `js:"message"`
+	Name    string `js:"name"`
+	IsError bool   `js:"isError"`
+	Reason  string `js:"reason"`
 }
 
 // Error satisfies the error interface for the PouchError type
 func (e *PouchError) Error() string {
-	return e.message
+	return e.Message + ": " + e.Reason
 }
 
 // ErrorStatus returns the status of a PouchError, or 0 for other errors
 func ErrorStatus(err error) int {
 	switch pe := err.(type) {
 	case *PouchError:
-		return pe.status
+		return pe.Status
 	}
 	return 0
 }
@@ -33,7 +34,7 @@ func ErrorStatus(err error) int {
 func ErrorMessage(err error) string {
 	switch pe := err.(type) {
 	case *PouchError:
-		return pe.message
+		return pe.Message
 	}
 	return ""
 }
@@ -42,7 +43,16 @@ func ErrorMessage(err error) string {
 func ErrorName(err error) string {
 	switch pe := err.(type) {
 	case *PouchError:
-		return pe.name
+		return pe.Name
+	}
+	return ""
+}
+
+// ErrorName returns the reason portion of a PouchError, or "" for other errors
+func ErrorReason(err error) string {
+	switch pe := err.(type) {
+	case *PouchError:
+		return pe.Reason
 	}
 	return ""
 }
@@ -52,7 +62,7 @@ func ErrorName(err error) string {
 func IsNotExist(err error) bool {
 	switch pe := err.(type) {
 	case *PouchError:
-		return pe.status == 404
+		return pe.Status == 404
 	}
 	return false
 }
@@ -62,7 +72,7 @@ func IsNotExist(err error) bool {
 func IsConflict(err error) bool {
 	switch pe := err.(type) {
 	case *PouchError:
-		return pe.status == 409
+		return pe.Status == 409
 	}
 	return false
 }
@@ -82,13 +92,7 @@ func NewPouchError(err *js.Error) error {
 	if err == nil {
 		return nil
 	}
-	return &PouchError{
-		e:       err,
-		status:  err.Get("status").Int(),
-		message: err.Get("message").String(),
-		name:    err.Get("name").String(),
-		isError: err.Get("error").Bool(),
-	}
+	return &PouchError{e: err}
 }
 
 // Underlying returns the underlying js.Error object, as returned from the PouchDB library
