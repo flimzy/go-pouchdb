@@ -39,6 +39,52 @@ type DBInfo struct {
 	UpdateSeq uint64 `json:"update_seq"`
 }
 
+// Security is a simple struct representing a _security document
+// for convenience.
+//
+// See http://wiki.apache.org/couchdb/Security_Features_Overview#Authorization
+type Security struct {
+	Admins  Permissions `json:"admins,omitempty"`
+	Members Permissions `json:"members,omitempty"`
+}
+
+// Permissions is a simple struct, to be used as a member of
+// a Security struct.
+type Permissions struct {
+	Names []string `json:"names,omitempty"`
+	Roles []string `json:"roles,omitempty"`
+}
+
+func uniq(a []string) []string {
+	items := make(map[string]struct{})
+	for _, item := range a {
+		items[item] = struct{}{}
+	}
+	uniqueItems := make([]string, len(items))
+	var i int = 0
+	for item, _ := range items {
+		uniqueItems[i] = item
+		i++
+	}
+	return uniqueItems
+}
+
+func (s *Security) AddAdminName(name string) {
+	s.Admins.Names = uniq(append(s.Admins.Names, name))
+}
+
+func (s *Security) AddAdminRole(role string) {
+	s.Admins.Roles = uniq(append(s.Admins.Roles, role))
+}
+
+func (s *Security) AddMemberName(name string) {
+	s.Members.Names = uniq(append(s.Members.Names, name))
+}
+
+func (s *Security) AddMemberRole(role string) {
+	s.Members.Roles = uniq(append(s.Members.Roles, role))
+}
+
 // GlobalPouch is the global pouchdb object. The package will look for it in
 // the global object (js.Global), or try to require it if it is not found. If
 // this does not work for you, you ought to set it explicitly yourself:
