@@ -31,10 +31,14 @@ func New(db *pouchdb.PouchDB) *PouchPluginFind {
 
 // Index defines an index to be created
 type Index struct {
+	// Fields is a list of fields to index
 	Fields []string `json:"fields"`
-	Name   string   `json:"name,omitifempty"`
-	Ddoc   string   `json:"ddoc,omitifempty"`
-	Type   string   `json:"type,omitifempty"`
+	// Name is the name of the index. Optional.
+	Name string `json:"name,omitifempty"`
+	// Design document name (i.e. the part after "_design/"). Optional.
+	Ddoc string `json:"ddoc,omitifempty"`
+	// Type specifies the index type. Only 'json' is supported. Optional.
+	Type string `json:"type,omitifempty"`
 }
 
 type indexWrapper struct {
@@ -59,7 +63,7 @@ func IsIndexExists(err error) bool {
 // Creates the requested index.
 //
 // See https://github.com/nolanlawson/pouchdb-find#dbcreateindexindex--callback
-func (db *PouchPluginFind) CreateIndex(index Index) *findError {
+func (db *PouchPluginFind) CreateIndex(index Index) error {
 	i := indexWrapper{index}
 	var jsonIndex map[string]interface{}
 	pouchdb.ConvertJSONObject(i, &jsonIndex)

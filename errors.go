@@ -18,7 +18,10 @@ type PouchError struct {
 
 // Error satisfies the error interface for the PouchError type
 func (e *PouchError) Error() string {
-	return e.Message + ": " + e.Reason
+	if e.Reason != "" && e.Reason != "undefined" && e.Reason != e.Message {
+		return e.Message + ": " + e.Reason
+	}
+	return e.Message
 }
 
 // ErrorStatus returns the status of a PouchError, or 0 for other errors
