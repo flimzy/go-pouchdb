@@ -31,14 +31,12 @@ func init() {
 }
 
 func TestFind(t *testing.T) {
-	mainDB := pouchdb.NewFromOpts(pouchdb.Options{
-		"name": "finddb",
-		"db":   memdown,
+	mainDB := pouchdb.NewWithOpts("finddb", pouchdb.Options{
+		DB: memdown,
 	})
 	mainDB.Destroy(pouchdb.Options{}) // to ensure a clean slate
-	mainDB = pouchdb.NewFromOpts(pouchdb.Options{
-		"name": "finddb",
-		"db":   memdown,
+	mainDB = pouchdb.NewWithOpts("finddb", pouchdb.Options{
+		DB: memdown,
 	})
 
 	db := myDB{
