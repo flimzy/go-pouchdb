@@ -26,9 +26,8 @@ func init() {
 }
 
 func newPouch(dbname string) *PouchDB {
-	return NewFromOpts(Options{
-		"name": dbname,
-		"db":   memdown,
+	return NewWithOpts(dbname, Options{
+		DB: memdown,
 	})
 }
 
@@ -45,9 +44,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewFromOpts(t *testing.T) {
-	db := NewFromOpts(Options{
-		"name": "testdb",
-	})
+	db := NewWithOpts("testdb", Options{})
 	info, err := db.Info()
 	if err != nil {
 		t.Fatalf("Info() returned error: %s", err)
@@ -139,7 +136,7 @@ func TestBulkDocs(t *testing.T) {
 	// test AllDocs()
 	allDocs := TestDocCollection{}
 	db.AllDocs(&allDocs, Options{
-		"include_docs": true,
+		IncludeDocs: true,
 	})
 	if allDocs.TotalRows != 2 {
 		t.Fatalf("Got an unexpected number of results: %d", allDocs.TotalRows)
@@ -171,7 +168,7 @@ func TestRemove(t *testing.T) {
 		t.Fatalf("Received error from Delete: %s", err)
 	}
 	var deletedDoc TestDoc
-	err = db.Get("foo", &deletedDoc, Options{"rev": delRev})
+	err = db.Get("foo", &deletedDoc, Options{Rev: delRev})
 	if err != nil {
 		t.Fatalf("Error fetching deleted doc: %s", err)
 	}
