@@ -119,11 +119,11 @@ func TestFind(t *testing.T) {
 	}
 
 	var resultDoc map[string]interface{}
-	req := map[string]interface{}{
-		"selector": map[string]string{
+	req := find.Request{
+		Selector: map[string]interface{}{
 			"name": "Bob",
 		},
-		"fields": []string{
+		Fields: []string{
 			"_id",
 			"name",
 			"size",

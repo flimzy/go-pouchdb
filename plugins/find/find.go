@@ -129,12 +129,35 @@ func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
 	return err
 }
 
+type Request struct {
+	Selector map[string]interface{}
+	Fields   []string
+	Sort     []interface{}
+	Limit    int
+	Skip     int
+}
+
+func (r *Request) compile() map[string]interface{} {
+	req := make(map[string]interface{})
+	req["selector"] = r.Selector
+	if len(r.Fields) > 0 {
+		req["fields"] = r.Fields
+	}
+	if r.Limit > 0 {
+		req["limit"] = r.Limit
+	}
+	if r.Skip > 0 {
+		req["skip"] = r.Skip
+	}
+	return req
+}
+
 // Find performs the requested search query
 //
 // See https://github.com/nolanlawson/pouchdb-find#dbfindrequest--callback
-func (db *PouchPluginFind) Find(request, doc interface{}) error {
+func (db *PouchPluginFind) Find(request Request, doc interface{}) error {
 	rw := pouchdb.NewResultWaiter()
-	db.Call("find", request, rw.Done)
+	db.Call("find", request.compile(), rw.Done)
 	result, err := rw.Read()
 	if err != nil {
 		return err

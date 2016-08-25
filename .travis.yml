@@ -15,5 +15,4 @@ install:
 
 script:
     - diff -u <(echo -n) <(gofmt -d ./)
-    - gopherjs test
-    - gopherjs test github.com/flimzy/go-pouchdb/plugins/find
+    - gopherjs test github.com/flimzy/go-pouchdb github.com/flimzy/go-pouchdb/plugins/find
