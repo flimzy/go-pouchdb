@@ -15,7 +15,7 @@ type Options struct {
 	// browsers that support both.
 	//
 	// Used by New(), for local databases only.
-	Adaptor string
+	Adapter string
 
 	// See https://github.com/Level/levelup#options
 	DB *js.Object
@@ -230,8 +230,11 @@ func (o *Options) compile() map[string]interface{} {
 	if o.AutoCompaction {
 		opts["auto_compaction"] = true
 	}
-	if o.Adaptor != "" {
-		opts["adaptor"] = o.Adaptor
+	if o.Adapter != "" {
+		opts["adapter"] = o.Adapter
+	}
+	if o.DB != nil {
+		opts["db"] = o.DB
 	}
 	if o.RevsLimit > 0 {
 		opts["revs_limit"] = o.RevsLimit
