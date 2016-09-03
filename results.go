@@ -27,7 +27,7 @@ func (rw *resultWaiter) Read() (*js.Object, error) {
 	if rawResult.err == nil {
 		return rawResult.result, nil
 	}
-	return rawResult.result, NewPouchError(&js.Error{rawResult.err})
+	return rawResult.result, NewPouchError(&js.Error{Object: rawResult.err})
 }
 
 // Error returns just the error of a PouchDB callback, for methods
