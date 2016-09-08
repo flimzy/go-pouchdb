@@ -1,3 +1,5 @@
+// +build js
+
 package pouchdb
 
 import "github.com/gopherjs/gopherjs/js"

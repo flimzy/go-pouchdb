@@ -1,3 +1,5 @@
+// +build js
+
 // Package pouchdb provides GopherJS bindings for PouchDB.
 // Whenever possible, the PouchDB function calls have been made more
 // Go idiomatic. This means:
