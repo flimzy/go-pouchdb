@@ -50,7 +50,8 @@ func Plugin(plugin *js.Object) {
 	globalPouch().Call("plugin", plugin)
 }
 
-// Debug enables debugging for the specified module.
+// Debug enables debugging for the specified module. Note this only affects
+// connections made after this is run.
 // See: http://pouchdb.com/api.html#debug_mode
 func Debug(module string) {
 	globalPouch().Get("debug").Call("enable", module)
