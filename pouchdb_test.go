@@ -266,3 +266,39 @@ func TestReplicate(t *testing.T) {
 	db1.Destroy(Options{})
 	db2.Destroy(Options{})
 }
+
+type Event struct {
+	Event  string
+	DbName string
+}
+
+func TestEvents(t *testing.T) {
+	eventsCh := make(chan Event)
+	OnCreate(func(dbname string) {
+		eventsCh <- Event{
+			Event:  "create",
+			DbName: dbname,
+		}
+	})
+	OnDestroy(func(dbname string) {
+		eventsCh <- Event{
+			Event:  "destroy",
+			DbName: dbname,
+		}
+	})
+
+	dbnames := []string{"one", "two", "three", "dog"}
+	for _, dbname := range dbnames {
+		db := newPouch(dbname)
+		ev := <-eventsCh
+		if ev.Event != "create" || ev.DbName != dbname {
+			t.Errorf("Got %s/%s, expected %s/%s", ev.Event, ev.DbName, "create", dbname)
+		}
+		db.Destroy(Options{})
+		ev = <-eventsCh
+		if ev.Event != "destroy" || ev.DbName != dbname {
+			t.Errorf("Got %s/%s, expected %s/%s", ev.Event, ev.DbName, "destroy", dbname)
+		}
+	}
+	close(eventsCh)
+}
