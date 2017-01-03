@@ -369,3 +369,19 @@ func (db *PouchDB) Call(name string, args ...interface{}) *js.Object {
 func (db *PouchDB) GetJS(name string) *js.Object {
 	return db.o.Get(name)
 }
+
+// OnCreate registers the function as an event listener for the 'created' event.
+// See https://pouchdb.com/api.html#events
+func OnCreate(fn func(dbName string)) {
+	globalPouch().Call("on", "created", func(dbname string) {
+		go fn(dbname)
+	})
+}
+
+// OnDestroy registers the function as an event listener for the 'destroyed'
+// event. See https://pouchdb.com/api.html#events
+func OnDestroy(fn func(dbName string)) {
+	globalPouch().Call("on", "destroyed", func(dbname string) {
+		go fn(dbname)
+	})
+}
