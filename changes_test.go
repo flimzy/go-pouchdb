@@ -5,11 +5,7 @@ package pouchdb
 import (
 	"fmt"
 	"strings"
-	"sync"
 	"testing"
-	"time"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func TestNoChanges(t *testing.T) {
@@ -117,36 +113,36 @@ func TestChanges(t *testing.T) {
 
 }
 
-func xTestLiveChanges(t *testing.T) {
-	fmt.Printf("x\n")
-	db := newPouch("changes")
-	cf, err := db.Changes(Options{
-		Live: true,
-	})
-	defer cf.Close()
-
-	fmt.Printf("y\n")
-	if err != nil {
-		t.Fatalf("Error opening changes feed: %s", err)
-	}
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		fmt.Printf("z\n")
-		for cf.Next() {
-			fmt.Printf("zz\n")
-			spew.Dump(cf)
-		}
-		fmt.Printf("a\n")
-		if err := cf.Err(); err != nil {
-			t.Fatalf("Error reading changes: %s", err)
-		}
-
-	}()
-	fmt.Printf("sleeping\n")
-	time.Sleep(1 * time.Second)
-	fmt.Printf("waiting\n")
-	wg.Wait()
-	fmt.Printf("Done waiting\n")
-}
+// func xTestLiveChanges(t *testing.T) {
+// 	fmt.Printf("x\n")
+// 	db := newPouch("changes")
+// 	cf, err := db.Changes(Options{
+// 		Live: true,
+// 	})
+// 	defer cf.Close()
+//
+// 	fmt.Printf("y\n")
+// 	if err != nil {
+// 		t.Fatalf("Error opening changes feed: %s", err)
+// 	}
+// 	var wg sync.WaitGroup
+// 	wg.Add(1)
+// 	go func() {
+// 		defer wg.Done()
+// 		fmt.Printf("z\n")
+// 		for cf.Next() {
+// 			fmt.Printf("zz\n")
+// 			spew.Dump(cf)
+// 		}
+// 		fmt.Printf("a\n")
+// 		if err := cf.Err(); err != nil {
+// 			t.Fatalf("Error reading changes: %s", err)
+// 		}
+//
+// 	}()
+// 	fmt.Printf("sleeping\n")
+// 	time.Sleep(1 * time.Second)
+// 	fmt.Printf("waiting\n")
+// 	wg.Wait()
+// 	fmt.Printf("Done waiting\n")
+// }
