@@ -212,6 +212,9 @@ func TestAttachments(t *testing.T) {
 		t.Fatal("PutAttachment() returned a 0-byte rev")
 	}
 	att2, err := db.Attachment("foo", "foo.txt", "")
+	if err != nil {
+		t.Fatalf("Error fetching attachment: %s", err)
+	}
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(att2.Body)
 	body2 := buf.String()

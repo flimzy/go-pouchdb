@@ -113,7 +113,7 @@ type Options struct {
 
 	// Maximum number of documents to return.
 	//
-	// Used by AllDocs() and Query()
+	// Used by AllDocs(), Query() and Changes().
 	Limit int
 
 	// Number of docs to skip before returning.
@@ -225,7 +225,25 @@ type Options struct {
 	//
 	// Used by Query().
 	Stale string
+
+	// Live sets continuous changes feed operation.
+	//
+	// Used by Changes().
+	Live bool
+
+	// Style specifies how many revisions are returned in the changes array.
+	Style FeedStyle
 }
+
+type FeedStyle string
+
+const (
+	// MainOnly only shows the winning revision in the changes feed.
+	MainOnly FeedStyle = "main_only"
+	// AllDocs returns all leaf revisions (including conflicts and deleted
+	// former conflicts) in the changes feed
+	AllDocs FeedStyle = "all_docs"
+)
 
 func (o *Options) compile() map[string]interface{} {
 	opts := make(map[string]interface{})
@@ -345,6 +363,12 @@ func (o *Options) compile() map[string]interface{} {
 	}
 	if o.Stale != "" {
 		opts["stale"] = o.Stale
+	}
+	if o.Live {
+		opts["live"] = true
+	}
+	if o.Style != FeedStyle("") {
+		opts["style"] = o.Style
 	}
 	return opts
 }
