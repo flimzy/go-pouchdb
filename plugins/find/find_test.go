@@ -118,7 +118,7 @@ func TestFind(t *testing.T) {
 		t.Fatalf("Error calling Put(): %s", err)
 	}
 
-	var resultDoc map[string]interface{}
+	var results []map[string]interface{}
 	req := map[string]interface{}{
 		"selector": map[string]string{
 			"name": "Bob",
@@ -129,21 +129,19 @@ func TestFind(t *testing.T) {
 			"size",
 		},
 	}
-	expectedResult := map[string]interface{}{
-		"docs": []interface{}{
-			map[string]interface{}{
-				"_id":  "12345",
-				"name": "Bob",
-				"size": float64(48),
-			},
+	expectedResults := []map[string]interface{}{
+		map[string]interface{}{
+			"_id":  "12345",
+			"name": "Bob",
+			"size": float64(48),
 		},
 	}
-	err = db.Find(req, &resultDoc)
+	err = db.Find(req, &results)
 	if err != nil {
 		t.Fatalf("Error executing Find(): %s", err)
 	}
-	if !reflect.DeepEqual(expectedResult, resultDoc) {
-		DumpDiff(expectedResult, resultDoc)
+	if !reflect.DeepEqual(expectedResults, results) {
+		DumpDiff(expectedResults, results)
 		t.Fatal()
 	}
 
