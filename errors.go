@@ -49,7 +49,7 @@ func ErrorName(err error) string {
 	return ""
 }
 
-// ErrorName returns the reason portion of a PouchError, or "" for other errors
+// ErrorReason returns the reason portion of a PouchError, or "" for other errors
 func ErrorReason(err error) string {
 	switch pe := err.(type) {
 	case *PouchError:
@@ -99,4 +99,23 @@ func NewPouchError(err *js.Error) error {
 // Underlying returns the underlying js.Error object, as returned from the PouchDB library
 func (e *PouchError) Underlying() *js.Error {
 	return e.e
+}
+
+// Warning represents a non-fatal PouchDB warning.
+type Warning struct {
+	Message string
+}
+
+func (w *Warning) Error() string {
+	return "WARNING: " + w.Message
+}
+
+// IsWarning returns true of the error message is a PouchDB warning, otherwise
+// false.
+func IsWarning(err error) bool {
+	switch err.(type) {
+	case *Warning:
+		return true
+	}
+	return false
 }

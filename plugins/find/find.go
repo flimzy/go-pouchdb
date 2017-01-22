@@ -3,6 +3,7 @@
 package find
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/gopherjs/gopherjs/js"
@@ -129,15 +130,34 @@ func (db *PouchPluginFind) DeleteIndex(index *IndexDef) error {
 	return err
 }
 
+type findResult struct {
+	Docs    json.RawMessage `json:"docs"`
+	Warning string          `json:"warning,omitempty"`
+	Error   string          `json:"error,omitempty"`
+}
+
 // Find performs the requested search query
 //
 // See https://github.com/nolanlawson/pouchdb-find#dbfindrequest--callback
-func (db *PouchPluginFind) Find(request, doc interface{}) error {
+func (db *PouchPluginFind) Find(request map[string]interface{}, docs interface{}) error {
 	rw := pouchdb.NewResultWaiter()
 	db.Call("find", request, rw.Done)
 	result, err := rw.Read()
 	if err != nil {
 		return err
 	}
-	return pouchdb.ConvertJSObject(result, doc)
+	doc := &findResult{}
+	if err := pouchdb.ConvertJSObject(result, doc); err != nil {
+		return err
+	}
+	if doc.Error != "" {
+		return errors.New(doc.Error)
+	}
+	if err := json.Unmarshal(doc.Docs, docs); err != nil {
+		return err
+	}
+	if doc.Warning != "" {
+		return &pouchdb.Warning{Message: doc.Warning}
+	}
+	return nil
 }
