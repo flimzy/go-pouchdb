@@ -33,11 +33,11 @@ type DBInfo struct {
 var GlobalPouch *js.Object
 
 func globalPouch() *js.Object {
-	if GlobalPouch != nil && jsbuiltin.TypeOf(GlobalPouch) != "undefined" {
+	if GlobalPouch != nil && GlobalPouch != js.Undefined {
 		return GlobalPouch
 	}
 	GlobalPouch = js.Global.Get("PouchDB")
-	if jsbuiltin.TypeOf(GlobalPouch) == "undefined" {
+	if GlobalPouch == js.Undefined {
 		GlobalPouch = js.Global.Call("require", "pouchdb")
 	}
 	return GlobalPouch
