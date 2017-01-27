@@ -87,7 +87,7 @@ func (db *PouchDB) Info() (DBInfo, error) {
 	return dbinfo, err
 }
 
-// Deestroy will delete the database.
+// Destroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy(opts Options) error {
 	rw := NewResultWaiter()
@@ -105,12 +105,14 @@ func ConvertJSONObject(input, output interface{}) error {
 	return json.Unmarshal(encoded, output)
 }
 
-// convertJSObject converts the provided *js.Object to an interface{} then
+// ConvertJSObject converts the provided *js.Object to an interface{} then
 // calls convertJSONObject. This is necessary for objects, because json.Marshal
 // ignores any unexported fields in objects, and this includes practically
 // everything inside a js.Object.
 func ConvertJSObject(jsObj *js.Object, output interface{}) error {
-	return ConvertJSONObject(jsObj.Interface(), output)
+	jsonString := js.Global.Get("JSON").Call("stringify", jsObj).String()
+	return json.Unmarshal([]byte(jsonString), output)
+	//	return ConvertJSONObject(jsObj.Interface(), output)
 }
 
 // Put will create a new document or update an existing document.
