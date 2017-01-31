@@ -112,7 +112,6 @@ func ConvertJSONObject(input, output interface{}) error {
 func ConvertJSObject(jsObj *js.Object, output interface{}) error {
 	jsonString := js.Global.Get("JSON").Call("stringify", jsObj).String()
 	return json.Unmarshal([]byte(jsonString), output)
-	//	return ConvertJSONObject(jsObj.Interface(), output)
 }
 
 func convertToJS(input interface{}) (*js.Object, error) {

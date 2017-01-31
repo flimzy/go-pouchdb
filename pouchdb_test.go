@@ -25,6 +25,10 @@ func init() {
 }
 
 func newPouch(dbname string) *PouchDB {
+	db := NewWithOpts(dbname, Options{
+		DB: memdown,
+	})
+	db.Destroy(Options{})
 	return NewWithOpts(dbname, Options{
 		DB: memdown,
 	})
