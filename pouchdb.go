@@ -87,7 +87,7 @@ func (db *PouchDB) Info() (DBInfo, error) {
 	return dbinfo, err
 }
 
-// Deestroy will delete the database.
+// Destroy will delete the database.
 // See: http://pouchdb.com/api.html#delete_database
 func (db *PouchDB) Destroy(opts Options) error {
 	rw := NewResultWaiter()
@@ -105,25 +105,36 @@ func ConvertJSONObject(input, output interface{}) error {
 	return json.Unmarshal(encoded, output)
 }
 
-// convertJSObject converts the provided *js.Object to an interface{} then
+// ConvertJSObject converts the provided *js.Object to an interface{} then
 // calls convertJSONObject. This is necessary for objects, because json.Marshal
 // ignores any unexported fields in objects, and this includes practically
 // everything inside a js.Object.
 func ConvertJSObject(jsObj *js.Object, output interface{}) error {
-	return ConvertJSONObject(jsObj.Interface(), output)
+	jsonString := js.Global.Get("JSON").Call("stringify", jsObj).String()
+	return json.Unmarshal([]byte(jsonString), output)
+}
+
+func convertToJS(input interface{}) (*js.Object, error) {
+	encoded, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+	return js.Global.Get("JSON").Call("parse", string(encoded)), nil
 }
 
 // Put will create a new document or update an existing document.
 // See: http://pouchdb.com/api.html#create_document
 func (db *PouchDB) Put(doc interface{}) (newrev string, err error) {
-	var convertedDoc interface{}
-	ConvertJSONObject(doc, &convertedDoc)
+	jsDoc, err := convertToJS(doc)
+	if err != nil {
+		return "", err
+	}
 	rw := NewResultWaiter()
-	db.Call("put", convertedDoc, rw.Done)
+	db.Call("put", jsDoc, rw.Done)
 	return rw.ReadRev()
 }
 
-// Get retrieves a document, specified by docId.
+// Get retrieves a document, specified by docID.
 // The document is unmarshalled into the given object.
 // Some fields (like _conflicts) will only be returned if the
 // options require it. Please refer to the CouchDB HTTP API documentation
@@ -131,9 +142,9 @@ func (db *PouchDB) Put(doc interface{}) (newrev string, err error) {
 //
 // See http://pouchdb.com/api.html#fetch_document
 // and http://docs.couchdb.org/en/latest/api/document/common.html?highlight=doc#get--db-docid
-func (db *PouchDB) Get(docId string, doc interface{}, opts Options) error {
+func (db *PouchDB) Get(docID string, doc interface{}, opts Options) error {
 	rw := NewResultWaiter()
-	db.Call("get", docId, opts.compile(), rw.Done)
+	db.Call("get", docID, opts.compile(), rw.Done)
 	obj, err := rw.ReadResult()
 	if err != nil {
 		return err

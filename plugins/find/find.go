@@ -19,9 +19,11 @@ type PouchPluginFind struct {
 func New(db *pouchdb.PouchDB) *PouchPluginFind {
 	fnType := jsbuiltin.TypeOf(db.GetJS("createIndex"))
 	if fnType == "undefined" {
-		// Load the JS plugin
-		plugin := js.Global.Call("require", "pouchdb-find")
-		pouchdb.Plugin(plugin)
+		if require := js.Global.Get("require"); require != js.Undefined {
+			// Load the JS plugin
+			plugin := js.Global.Call("require", "pouchdb-find")
+			pouchdb.Plugin(plugin)
+		}
 	} else if fnType != "function" {
 		panic("Cannot load pouchdb-find plugin; .createIndex method already exists as a non-function")
 	}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gopherjs/gopherjs/js"
 )
 
@@ -24,6 +25,10 @@ func init() {
 }
 
 func newPouch(dbname string) *PouchDB {
+	db := NewWithOpts(dbname, Options{
+		DB: memdown,
+	})
+	db.Destroy(Options{})
 	return NewWithOpts(dbname, Options{
 		DB: memdown,
 	})
@@ -299,4 +304,32 @@ func TestEvents(t *testing.T) {
 		}
 	}
 	close(eventsCh)
+}
+
+type testObj struct {
+	Foo string `json:"foo"`
+	Bar int    `json:"bar"`
+	Baz bool   `json:"baz"`
+}
+
+func TestConvertJSObject(t *testing.T) {
+	jsObj := js.Global.Get("Object").New()
+	jsObj.Set("foo", "bar")
+	jsObj.Set("bar", 100)
+	jsObj.Set("baz", true)
+	var result testObj
+	expected := testObj{
+		Foo: "bar",
+		Bar: 100,
+		Baz: true,
+	}
+	if err := ConvertJSObject(jsObj, &result); err != nil {
+		t.Errorf("error converting JSON object: %s", err)
+	}
+	if !reflect.DeepEqual(expected, result) {
+		spew.Dump(expected)
+		spew.Dump(result)
+		t.Errorf("Results differ")
+	}
+
 }
