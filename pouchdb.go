@@ -38,7 +38,7 @@ func globalPouch() *js.Object {
 	}
 	GlobalPouch = js.Global.Get("PouchDB")
 	if GlobalPouch == js.Undefined {
-		GlobalPouch = js.Global.Call("require", "pouchdb")
+		panic("go-pouchdb: Cannot find global PouchDB object. Did you load the PouchDB library?")
 	}
 	return GlobalPouch
 }
