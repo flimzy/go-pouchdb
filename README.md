@@ -1,5 +1,12 @@
 [![Build Status](https://travis-ci.org/flimzy/go-pouchdb.svg?branch=master)](https://travis-ci.org/flimzy/go-pouchdb) [![GoDoc](https://godoc.org/github.com/flimzy/go-pouchdb?status.png)](http://godoc.org/github.com/flimzy/go-pouchdb)
 
+# !!! Notice !!!
+
+This package has been superceded by my new package [Kivik](https://github.com/flimzy/kivik),
+which provides a common, isomorphic interface for both Go and GopherJS apps
+using CouchDB and PouchDB.  For new applications, you should use Kivik instead
+of go-pouchdb. It has many more features, and is under active development.
+
 # go-pouchdb
 
 [GopherJS](http://www.gopherjs.org/) bindings for [PouchDB](http://pouchdb.com/).
@@ -40,12 +47,12 @@ When deploying your code for use in a browser, you have a couple of options.  My
 If you have different requirements, and cannot load pouchdb globally, there is one alternative.  You can load the PouchDB module into a custom variable, and tell **go-pouchdb** by setting the `pouchdb.GlobalPouch` variable in your `init()` function:
 
     package main
-    
+
     import (
         "github.com/flimzy/go-pouchdb"
         "github.com/gopherjs/gopherjs/js"
     )
-    
+
     func init() {
         pouchdb.GlobalPouch = js.Global.Get("someOtherPouchDBObject")
     }
