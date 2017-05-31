@@ -14,5 +14,6 @@ install:
     - go get github.com/kr/pretty github.com/pmezard/go-difflib/difflib
 
 script:
+    - git diff master
     - diff -u <(echo -n) <(gofmt -d ./)
     - gopherjs test github.com/flimzy/go-pouchdb github.com/flimzy/go-pouchdb/plugins/find
